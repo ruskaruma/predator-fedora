@@ -26,6 +26,7 @@ import traceback
 from pathlib import Path
 from enum import Enum
 from PowerSourceDetection import PowerSourceDetector 
+from performance import PowerLimitController, FanCurveController
 from typing import Dict, List, Tuple, Set
 # from KeyboardMonitor import KeyboardMonitor
 
@@ -155,6 +156,8 @@ class DAMXManager:
             raise FileNotFoundError(f"Base path does not exist: {self.base_path}")
         
         self.power_monitor = None
+        self.power_limits = None
+        self.fan_curve = None
 
     def _get_restart_attempts(self) -> int:
         """Get current restart attempt count"""
@@ -1017,6 +1020,12 @@ class DAMXManager:
         if "four_zone_mode" in self.available_features:
             settings["four_zone_mode"] = self.get_four_zone_mode()
 
+        if self.power_limits and self.power_limits.available:
+            settings["power_limits"] = self.power_limits.status()
+
+        if self.fan_curve and self.fan_curve.available:
+            settings["fan_curve"] = self.fan_curve.status()
+
         return settings
 
 
@@ -1267,6 +1276,8 @@ class DaemonServer:
 
                 cpu = params.get("cpu", 0)
                 gpu = params.get("gpu", 0)
+                if self.manager.fan_curve:
+                    self.manager.fan_curve.disable_for_manual_control()
                 success = self.manager.set_fan_speed(cpu, gpu)
                 return {
                     "success": success,
@@ -1361,6 +1372,38 @@ class DaemonServer:
                     } if success else None,
                     "error": "Failed to set four-zone mode" if not success else None
                 }
+
+            elif command == "get_power_limits":
+                if not self.manager.power_limits or not self.manager.power_limits.available:
+                    return {"success": False, "error": "Power limits are not supported on this device"}
+                return {"success": True, "data": self.manager.power_limits.status()}
+
+            elif command == "set_power_limits":
+                if not self.manager.power_limits or not self.manager.power_limits.available:
+                    return {"success": False, "error": "Power limits are not supported on this device"}
+                ok, err = self.manager.power_limits.set_limits(params.get("pl1", 0), params.get("pl2", 0))
+                return {"success": ok, "data": self.manager.power_limits.status() if ok else None,
+                        "error": err or None}
+
+            elif command == "reset_power_limits":
+                if not self.manager.power_limits or not self.manager.power_limits.available:
+                    return {"success": False, "error": "Power limits are not supported on this device"}
+                ok, err = self.manager.power_limits.reset()
+                return {"success": ok, "data": self.manager.power_limits.status() if ok else None,
+                        "error": err or None}
+
+            elif command == "get_fan_curve":
+                if not self.manager.fan_curve or not self.manager.fan_curve.available:
+                    return {"success": False, "error": "Fan curves are not supported on this device"}
+                return {"success": True, "data": self.manager.fan_curve.status()}
+
+            elif command == "set_fan_curve":
+                if not self.manager.fan_curve or not self.manager.fan_curve.available:
+                    return {"success": False, "error": "Fan curves are not supported on this device"}
+                ok, err = self.manager.fan_curve.configure(bool(params.get("enabled", False)),
+                                                          params.get("cpu"), params.get("gpu"))
+                return {"success": ok, "data": self.manager.fan_curve.status() if ok else None,
+                        "error": err or None}
 
             elif command == "get_supported_features":
                 return {
@@ -1572,6 +1615,15 @@ class DAMXDaemon:
 
         return config
 
+    def save_config(self):
+        """Persist the in-memory config (used by the power limit and fan curve controllers)"""
+        try:
+            os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+            with open(CONFIG_PATH, 'w') as f:
+                self.config.write(f)
+        except OSError as e:
+            log.error(f"Failed to save config: {e}")
+
     def setup(self):
         """Set up the daemon"""
         # Load configuration first
@@ -1593,6 +1645,17 @@ class DAMXDaemon:
             # if not kb_success:
             #     log.error("Failed to start keyboard monitoring")
             #     # Don't return False here - continue with reduced functionality
+
+            # Power limits and fan curves (the fan curve thread also re-applies power limits)
+            self.manager.power_limits = PowerLimitController(self.config, self.save_config)
+            if self.manager.power_limits.available:
+                self.manager.available_features.add("power_limits")
+                self.manager.power_limits.apply()
+            self.manager.fan_curve = FanCurveController(
+                os.path.join(self.manager.base_path, "fan_speed"), self.config, self.save_config,
+                self.manager.power_limits)
+            if self.manager.fan_curve.available and "fan_speed" in self.manager.available_features:
+                self.manager.available_features.add("fan_curve")
 
             # Initialize power monitor (started in run())
             self.power_monitor = PowerSourceDetector(self.manager)
@@ -1631,6 +1694,8 @@ class DAMXDaemon:
             self.running = True
             self.server = DaemonServer(self.manager)
             self.power_monitor.start_monitoring()
+            if self.manager.fan_curve:
+                self.manager.fan_curve.start()
             self.server.start()
             # Start keyboard monitoring
             
@@ -1655,6 +1720,9 @@ class DAMXDaemon:
     
         if self.power_monitor:
             self.power_monitor.stop_monitoring()
+
+        if self.manager and self.manager.fan_curve:
+            self.manager.fan_curve.stop()
     
         # Remove PID file
         try:
