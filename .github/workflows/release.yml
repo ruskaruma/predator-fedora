@@ -37,6 +37,11 @@ jobs:
           ' CHANGELOG.md > release-notes.md
           [ -s release-notes.md ] || { echo "No CHANGELOG.md section for $GITHUB_REF_NAME"; exit 1; }
 
+      - name: Add stable-named copy for the "latest" download link
+        run: |
+          cp dist/predatorcore-*-linux-x64.tar.gz dist/predatorcore-linux-x64.tar.gz
+          (cd dist && sha256sum predatorcore-linux-x64.tar.gz > predatorcore-linux-x64.tar.gz.sha256)
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
