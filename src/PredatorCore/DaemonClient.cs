@@ -178,10 +178,8 @@ public class DaemonClient : IDisposable
 
                 await _socket.SendAsync(requestBytes, SocketFlags.None);
 
-                var buffer = new byte[4096];
-                var received = await _socket.ReceiveAsync(buffer, SocketFlags.None);
-
-                if (received <= 0)
+                var response = await ReceiveJsonAsync();
+                if (response == null)
                 {
                     ResetConnection();
                     attempt++;
@@ -189,8 +187,7 @@ public class DaemonClient : IDisposable
                     continue;
                 }
 
-                var responseJson = Encoding.UTF8.GetString(buffer, 0, received);
-                return JsonDocument.Parse(responseJson);
+                return response;
             }
             catch (SocketException ex) when (
                 ex.SocketErrorCode == SocketError.ConnectionReset ||
@@ -224,6 +221,79 @@ public class DaemonClient : IDisposable
         throw new IOException($"Failed to communicate with daemon after {MaxRetryAttempts} attempts");
     }
 
+
+    /// <summary>
+    ///     Reads one JSON reply. Replies larger than a single socket read (e.g. settings with fan
+    ///     curves) arrive in several chunks, so keep reading until the document is complete.
+    /// </summary>
+    private async Task<JsonDocument?> ReceiveJsonAsync()
+    {
+        const int maxReplyBytes = 1 << 20;
+        var buffer = new byte[8192];
+        using var reply = new MemoryStream();
+
+        while (reply.Length < maxReplyBytes)
+        {
+            var received = await _socket.ReceiveAsync(buffer, SocketFlags.None);
+            if (received <= 0) return null;
+            reply.Write(buffer, 0, received);
+
+            try
+            {
+                return JsonDocument.Parse(reply.ToArray());
+            }
+            catch (JsonException)
+            {
+                // Incomplete document: read the next chunk if more is on its way, otherwise it's malformed.
+                if (received < buffer.Length && _socket.Available == 0 && !await WaitForMoreDataAsync())
+                    throw;
+            }
+        }
+
+        throw new JsonException("Daemon reply exceeded 1 MB");
+    }
+
+    private async Task<bool> WaitForMoreDataAsync()
+    {
+        for (var i = 0; i < 20 && _socket.Available == 0; i++) await Task.Delay(10);
+        return _socket.Available > 0;
+    }
+
+    public async Task<bool> SetPowerLimitsAsync(int pl1, int pl2)
+    {
+        if (!IsFeatureAvailable("power_limits")) return false;
+        var response = await SendCommandAsync("set_power_limits",
+            new Dictionary<string, object> { { "pl1", pl1 }, { "pl2", pl2 } });
+        return response.RootElement.GetProperty("success").GetBoolean();
+    }
+
+    public async Task<bool> ResetPowerLimitsAsync()
+    {
+        if (!IsFeatureAvailable("power_limits")) return false;
+        var response = await SendCommandAsync("reset_power_limits");
+        return response.RootElement.GetProperty("success").GetBoolean();
+    }
+
+    public async Task<FanCurveSettings?> GetFanCurveAsync()
+    {
+        if (!IsFeatureAvailable("fan_curve")) return null;
+        var response = await SendCommandAsync("get_fan_curve");
+        if (!response.RootElement.GetProperty("success").GetBoolean()) return null;
+        return JsonSerializer.Deserialize<FanCurveSettings>(response.RootElement.GetProperty("data").GetRawText());
+    }
+
+    public async Task<(bool ok, string? error)> SetFanCurveAsync(bool enabled, List<int[]> cpu, List<int[]> gpu)
+    {
+        if (!IsFeatureAvailable("fan_curve")) return (false, "Fan curves are not supported");
+        var response = await SendCommandAsync("set_fan_curve", new Dictionary<string, object>
+        {
+            { "enabled", enabled }, { "cpu", cpu }, { "gpu", gpu }
+        });
+        var root = response.RootElement;
+        var ok = root.GetProperty("success").GetBoolean();
+        var error = root.TryGetProperty("error", out var e) && e.ValueKind == JsonValueKind.String ? e.GetString() : null;
+        return (ok, error);
+    }
 
     /// <summary>
     ///     Get all settings from the daemon
@@ -569,6 +639,10 @@ public class DaemonSettings
 
     [JsonPropertyName("four_zone_mode")] public string FourZoneMode { get; set; } = "";
 
+    [JsonPropertyName("power_limits")] public PowerLimitSettings? PowerLimits { get; set; }
+
+    [JsonPropertyName("fan_curve")] public FanCurveSettings? FanCurve { get; set; }
+
     [JsonPropertyName("modprobe_parameter")]
     public string ModprobeParameter { get; set; } = "";
 }
@@ -585,4 +659,31 @@ public class FanSpeedSettings
     [JsonPropertyName("cpu")] public string Cpu { get; set; } = "0";
 
     [JsonPropertyName("gpu")] public string Gpu { get; set; } = "0";
+}
+
+public class PowerLimitSettings
+{
+    [JsonPropertyName("enabled")] public bool Enabled { get; set; }
+    [JsonPropertyName("pl1")] public int Pl1 { get; set; }
+    [JsonPropertyName("pl2")] public int Pl2 { get; set; }
+    [JsonPropertyName("effective_pl1")] public int? EffectivePl1 { get; set; }
+    [JsonPropertyName("effective_pl2")] public int? EffectivePl2 { get; set; }
+    [JsonPropertyName("firmware_pl1")] public int? FirmwarePl1 { get; set; }
+    [JsonPropertyName("stock_pl1")] public int? StockPl1 { get; set; }
+    [JsonPropertyName("stock_pl2")] public int? StockPl2 { get; set; }
+    [JsonPropertyName("pl1_min")] public int Pl1Min { get; set; } = 15;
+    [JsonPropertyName("pl1_max")] public int Pl1Max { get; set; } = 115;
+    [JsonPropertyName("pl2_max")] public int Pl2Max { get; set; } = 157;
+}
+
+public class FanCurveSettings
+{
+    [JsonPropertyName("enabled")] public bool Enabled { get; set; }
+    [JsonPropertyName("cpu")] public List<int[]> Cpu { get; set; } = new();
+    [JsonPropertyName("gpu")] public List<int[]> Gpu { get; set; } = new();
+    [JsonPropertyName("cpu_temp")] public double? CpuTemp { get; set; }
+    [JsonPropertyName("gpu_temp")] public double? GpuTemp { get; set; }
+    [JsonPropertyName("cpu_percent")] public int CpuPercent { get; set; }
+    [JsonPropertyName("gpu_percent")] public int GpuPercent { get; set; }
+    [JsonPropertyName("safety_temp")] public int SafetyTemp { get; set; } = 95;
 }

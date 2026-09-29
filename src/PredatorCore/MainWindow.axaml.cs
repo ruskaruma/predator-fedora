@@ -119,9 +119,34 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyLocalBranding();
         BindControls();
         AttachEventHandlers();
         InitializeAsync();
+    }
+
+    /// <summary>
+    ///     Optional per-machine branding: if ~/.local/share/predatorcore/icons/ contains icon.png and/or
+    ///     iconTransparent.png, use them for the window icon and header instead of the built-in artwork.
+    ///     Lets a local install use artwork that isn't distributed with the project.
+    /// </summary>
+    private void ApplyLocalBranding()
+    {
+        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "predatorcore", "icons");
+        try
+        {
+            var icon = Path.Combine(dir, "icon.png");
+            if (File.Exists(icon)) Icon = new WindowIcon(icon);
+
+            var mark = Path.Combine(dir, "iconTransparent.png");
+            if (File.Exists(mark) && this.FindControl<Image>("BrandImage") is { } brand)
+                brand.Source = new Avalonia.Media.Imaging.Bitmap(mark);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Local branding ignored: {ex.Message}");
+        }
     }
 
     private void BindControls()
@@ -366,14 +391,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private bool _initialPageShown;
 
-    // Start on the Monitoring page once the daemon settings have loaded.
+    // Start on the Monitoring page (or the one named by --page) once the daemon settings have loaded.
     private void OpenMonitoringOnFirstLoad()
     {
         if (_initialPageShown) return;
         _initialPageShown = true;
+        // `--page performance` (or monitoring/lighting/battery/settings) opens a specific page.
+        var args = Environment.GetCommandLineArgs();
+        var pageArg = Array.IndexOf(args, "--page") is var i and >= 0 && i + 1 < args.Length ? args[i + 1] : "";
+        var pageIndex = Array.IndexOf(new[] { "monitoring", "performance", "lighting", "battery", "settings" },
+            pageArg.ToLowerInvariant());
         Dispatcher.UIThread.Post(() =>
         {
-            if (this.FindControl<TabControl>("NavTabs") is { } tabs) tabs.SelectedIndex = 0;
+            if (this.FindControl<TabControl>("NavTabs") is { } tabs) tabs.SelectedIndex = Math.Max(0, pageIndex);
         }, DispatcherPriority.Background);
     }
 
@@ -500,6 +530,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SetText(_modelNameText, GetLinuxLaptopModel());
 
         UpdateUIElementVisibility();
+        ApplyPerformanceExtras();
     }
 
     private static bool IsEnabledSetting(string? value)

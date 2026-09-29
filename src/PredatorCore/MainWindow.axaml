@@ -45,7 +45,7 @@
                 <Grid ColumnDefinitions="210,*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" Margin="20 0 0 0"
                                 VerticalAlignment="Center">
-                        <Image Source="iconTransparent.png" Width="28" Height="28" />
+                        <Image x:Name="BrandImage" Source="iconTransparent.png" Width="30" Height="30" />
                         <StackPanel VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="PREDATOR" FontFamily="{StaticResource OxaniumBoldFont}" FontSize="18"
@@ -205,6 +205,55 @@
                                 </StackPanel>
                             </Border>
 
+                            <Border Classes="Card" x:Name="PowerLimitsPanel" IsVisible="False">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <Border Classes="CardAccent" Background="{StaticResource PsAccentOrange}" />
+                                            <TextBlock Text="CPU POWER LIMITS" Classes="SubHeader"
+                                                       Foreground="{StaticResource PsAccentOrange}" />
+                                            <TextBlock Classes="Hint"
+                                                       Text="PL1 is the sustained power budget, PL2 the short burst budget. Lower PL2 to stop 100°C spikes on light workloads." />
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Classes="Chip" VerticalAlignment="Top">
+                                            <TextBlock x:Name="PowerLimitsStatusText" Text="—" FontSize="11"
+                                                       FontFamily="{StaticResource OxaniumBoldFont}" LetterSpacing="1" />
+                                        </Border>
+                                    </Grid>
+
+                                    <WrapPanel Orientation="Horizontal" Margin="0 16 0 4" ItemSpacing="10">
+                                        <Button x:Name="PowerPresetCoolButton" Content="COOL · 35 / 65 W" Classes="Secondary"
+                                                Click="PowerPreset_OnClick" Tag="35,65" />
+                                        <Button x:Name="PowerPresetBalancedButton" Content="BALANCED · 55 / 100 W"
+                                                Classes="Secondary" Click="PowerPreset_OnClick" Tag="55,100" />
+                                        <Button x:Name="PowerPresetFastButton" Content="FAST · 80 / 140 W" Classes="Secondary"
+                                                Click="PowerPreset_OnClick" Tag="80,140" />
+                                    </WrapPanel>
+
+                                    <Grid ColumnDefinitions="110,*,70" RowDefinitions="Auto,Auto" Margin="0 12 0 0">
+                                        <TextBlock Grid.Row="0" Text="PL1 SUSTAINED" Classes="Label" VerticalAlignment="Center" />
+                                        <Slider x:Name="Pl1Slider" Grid.Row="0" Grid.Column="1" Minimum="15" Maximum="115"
+                                                TickFrequency="5" Value="65" />
+                                        <TextBlock x:Name="Pl1Text" Grid.Row="0" Grid.Column="2" Text="65 W" Classes="Value"
+                                                   TextAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Row="1" Text="PL2 BURST" Classes="Label" VerticalAlignment="Center" />
+                                        <Slider x:Name="Pl2Slider" Grid.Row="1" Grid.Column="1" Minimum="15" Maximum="157"
+                                                TickFrequency="1" Value="157" />
+                                        <TextBlock x:Name="Pl2Text" Grid.Row="1" Grid.Column="2" Text="157 W" Classes="Value"
+                                                   TextAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0 10 0 0">
+                                        <TextBlock Classes="Hint" VerticalAlignment="Center"
+                                                   Text="Applied on top of every mode and re-applied automatically after mode changes, sleep and reboot." />
+                                        <Button x:Name="ResetPowerLimitsButton" Grid.Column="1" Content="RESET TO STOCK"
+                                                Classes="Secondary" Margin="10 0" Click="ResetPowerLimits_OnClick" />
+                                        <Button x:Name="ApplyPowerLimitsButton" Grid.Column="2" Content="APPLY"
+                                                Click="ApplyPowerLimits_OnClick" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
                             <Border Classes="Card" x:Name="FanControlPanel">
                                 <StackPanel>
                                     <Border Classes="CardAccent" />
@@ -231,6 +280,13 @@
                                             <StackPanel>
                                                 <material:MaterialIcon Kind="Tune" />
                                                 <TextBlock Text="CUSTOM" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton x:Name="CurveFanRadioButton" GroupName="FanModeGroup" IsVisible="False"
+                                                     Click="CurveFanRadioButton_OnClick">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="ChartBellCurveCumulative" />
+                                                <TextBlock Text="CURVE" />
                                             </StackPanel>
                                         </RadioButton>
                                     </WrapPanel>
@@ -262,6 +318,48 @@
                                                            Text="Low fan speeds can let the i9 reach its 100°C limit." />
                                                 <Button x:Name="SetManualSpeedButton" Grid.Column="1"
                                                         Content="APPLY" Click="SetManualSpeedButton_OnClick" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Classes="Tile" Margin="0 12 0 0" Padding="18 14"
+                                            IsVisible="{Binding ElementName=CurveFanRadioButton, Path=IsChecked}">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Classes="Hint" VerticalAlignment="Center"
+                                                           Text="Drag points to shape the curve · double-click to add · right-click to remove. 0% hands the fan back to firmware auto." />
+                                                <WrapPanel Grid.Column="1" Orientation="Horizontal" ItemSpacing="8">
+                                                    <Button Content="SILENT" Classes="Secondary" Tag="silent"
+                                                            Click="FanCurvePreset_OnClick" />
+                                                    <Button Content="BALANCED" Classes="Secondary" Tag="balanced"
+                                                            Click="FanCurvePreset_OnClick" />
+                                                    <Button Content="AGGRESSIVE" Classes="Secondary" Tag="aggressive"
+                                                            Click="FanCurvePreset_OnClick" />
+                                                </WrapPanel>
+                                            </Grid>
+                                            <UniformGrid Columns="2">
+                                                <StackPanel Spacing="6" Margin="0 0 8 0">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <TextBlock Text="CPU FAN" Classes="Label" />
+                                                        <TextBlock x:Name="CpuCurveLiveText" Grid.Column="1" Text="—" Classes="Label"
+                                                                   Foreground="{StaticResource PsAccent}" />
+                                                    </Grid>
+                                                    <views:FanCurveEditor x:Name="CpuCurveEditor" Height="220" />
+                                                </StackPanel>
+                                                <StackPanel Spacing="6" Margin="8 0 0 0">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <TextBlock Text="GPU FAN" Classes="Label" />
+                                                        <TextBlock x:Name="GpuCurveLiveText" Grid.Column="1" Text="—" Classes="Label"
+                                                                   Foreground="{StaticResource PsAccentOrange}" />
+                                                    </Grid>
+                                                    <views:FanCurveEditor x:Name="GpuCurveEditor" Height="220" Accent="#FF8A00" />
+                                                </StackPanel>
+                                            </UniformGrid>
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Classes="Warning" VerticalAlignment="Center"
+                                                           Text="Above 95°C both fans run at 100% regardless of the curve." />
+                                                <Button x:Name="ApplyFanCurveButton" Grid.Column="1" Content="APPLY CURVE"
+                                                        Click="ApplyFanCurve_OnClick" />
                                             </Grid>
                                         </StackPanel>
                                     </Border>
