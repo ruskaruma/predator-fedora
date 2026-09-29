@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Check tag matches app version
+        run: |
+          version="$(grep -oP '<Version>\K[^<]+' src/PredatorCore/PredatorCore.csproj)"
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME != csproj version $version"; exit 1; }
+
+      - name: Check daemon compiles
+        run: python3 -m py_compile daemon/*.py
+
+      - name: Build package
+        run: ./scripts/package.sh
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          awk -v tag="$GITHUB_REF_NAME" '
+            $0 ~ "^## " tag "( |$)" { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          [ -s release-notes.md ] || { echo "No CHANGELOG.md section for $GITHUB_REF_NAME"; exit 1; }
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/predatorcore-*-linux-x64.tar.gz \
+            dist/predatorcore-*-linux-x64.tar.gz.sha256 \
+            --title "PredatorCore $GITHUB_REF_NAME" \
+            --notes-file release-notes.md

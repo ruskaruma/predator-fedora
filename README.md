@@ -40,7 +40,17 @@ echo 'z /sys/class/powercap/intel-rapl:0/energy_uj 0440 root linuwu_sense' | sud
 sudo systemd-tmpfiles --create /etc/tmpfiles.d/predatorcore-rapl.conf
 ```
 
-## Build and install
+## Download
+
+Get the latest `predatorcore-*-linux-x64.tar.gz` from [Releases](https://github.com/ruskaruma/predator-fedora/releases). It's self-contained, so no .NET install is needed:
+
+```bash
+tar xzf predatorcore-*-linux-x64.tar.gz && cd predatorcore-*-linux-x64
+./install.sh                 # the app
+sudo ./install-daemon.sh     # power limits, fan curves, GPU power
+```
+
+## Build and install from source
 
 ```bash
 # Fedora: sudo dnf install dotnet-sdk-9.0
