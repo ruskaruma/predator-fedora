@@ -48,6 +48,10 @@ public sealed class MetricsSample
 
     public TimeSpan Uptime;
     public string LoadAvg = "—";
+
+    /// <summary>Share of the last interval the CPU package spent thermally throttled (0-100).</summary>
+    public double ThrottledPercent;
+    public long ThrottleEventsTotal;
 }
 
 /// <summary>
@@ -70,6 +74,8 @@ public sealed class SystemMetricsSampler
     private long _lastRaplUj;
     private long _raplMaxUj;
     private long _lastRx, _lastTx;
+    private long _lastThrottleMs = -1;
+    private const string ThrottleDir = "/sys/devices/system/cpu/cpu0/thermal_throttle";
     private DateTime _lastSampleAt = DateTime.MinValue;
 
     public SystemMetricsSampler()
@@ -116,6 +122,7 @@ public sealed class SystemMetricsSampler
         SampleBattery(s);
         SampleNetwork(s, dt);
         SampleSystem(s);
+        SampleThrottle(s, dt);
 
         _lastSampleAt = now;
         return s;
@@ -290,6 +297,16 @@ public sealed class SystemMetricsSampler
         _lastTx = tx;
     }
 
+    private void SampleThrottle(MetricsSample s, double dt)
+    {
+        if (long.TryParse(ReadText($"{ThrottleDir}/package_throttle_count"), out var events))
+            s.ThrottleEventsTotal = events;
+        if (!long.TryParse(ReadText($"{ThrottleDir}/package_throttle_total_time_ms"), out var ms)) return;
+        if (_lastThrottleMs >= 0 && dt > 0)
+            s.ThrottledPercent = Math.Clamp((ms - _lastThrottleMs) / (dt * 1000) * 100, 0, 100);
+        _lastThrottleMs = ms;
+    }
+
     private static void SampleSystem(MetricsSample s)
     {
         var uptime = ReadText("/proc/uptime")?.Split(' ')[0];
@@ -372,6 +389,8 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
     private string _netDown = "—", _netUp = "—";
     private string _uptime = "—", _loadAvg = "—";
     private double _cpuFanPercent, _gpuFanPercent;
+    private bool _isThrottling;
+    private string _throttleText = "", _throttleSummary = "—", _gpuClients = "—";
 
     public string ModelName { get; init; } = "";
     public string CpuThreadsText { get; init; } = "";
@@ -401,6 +420,10 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
     public string LoadAvg { get => _loadAvg; set => Set(ref _loadAvg, value); }
     public double CpuFanPercent { get => _cpuFanPercent; set => Set(ref _cpuFanPercent, value); }
     public double GpuFanPercent { get => _gpuFanPercent; set => Set(ref _gpuFanPercent, value); }
+    public bool IsThrottling { get => _isThrottling; set => Set(ref _isThrottling, value); }
+    public string ThrottleText { get => _throttleText; set => Set(ref _throttleText, value); }
+    public string ThrottleSummary { get => _throttleSummary; set => Set(ref _throttleSummary, value); }
+    public string GpuClients { get => _gpuClients; set => Set(ref _gpuClients, value); }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -449,6 +472,10 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
             ? $"{(int)s.Uptime.TotalDays}d {s.Uptime.Hours}h {s.Uptime.Minutes}m"
             : $"{s.Uptime.Hours}h {s.Uptime.Minutes}m";
         LoadAvg = s.LoadAvg;
+
+        IsThrottling = s.ThrottledPercent >= 1;
+        ThrottleText = $"THERMAL THROTTLING · {s.ThrottledPercent:0}% OF THE TIME";
+        ThrottleSummary = s.ThrottleEventsTotal > 0 ? $"{s.ThrottleEventsTotal:N0} throttle events since boot" : "No throttling since boot";
 
         CpuFanPercent = Math.Min(100, 100 * cpuFanRpm / FanMaxRpm);
         GpuFanPercent = Math.Min(100, 100 * gpuFanRpm / FanMaxRpm);

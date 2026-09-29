@@ -28,14 +28,8 @@ namespace PredatorCore;
 public partial class Dashboard : UserControl, INotifyPropertyChanged
 {
     private const int REFRESH_INTERVAL_MS = 2000; // 2 seconds
-    private const int MAX_HISTORY_POINTS = 60; // 1 minute of history (30 * 2s refresh)
+    private const int MAX_HISTORY_POINTS = 60; // 2 minutes of history at the 2 s refresh
 
-    private const int MIN_RPM_FOR_ANIMATION = 100;
-    private const double MAX_ANIMATION_DURATION = 5.0; // seconds for very slow rotation
-    private const double MIN_ANIMATION_DURATION = 0.05; // seconds for very fast rotation
-    private const int RPM_CHANGE_THRESHOLD = 500; // Only update animation if RPM changes by this much
-    private readonly RotateTransform _cpuFanRotateTransform;
-    private readonly RotateTransform _gpuFanRotateTransform;
 
     // Timer to refresh dynamic system metrics
     private readonly DispatcherTimer _refreshTimer;
@@ -43,12 +37,10 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     // Cache for system info paths
     private readonly Dictionary<string, string> _systemInfoPaths = new();
 
-    private bool _animationsInitialized;
     private string? _batteryDir;
     private int _batteryPercentageInt;
     private string _batteryStatus;
     private string _batteryTimeRemainingString;
-    private Animation? _cpuFanAnimation;
     private int _cpuFanSpeedRpm;
     private string _cpuName;
     private double _cpuTemp;
@@ -56,7 +48,6 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     private double _cpuUsage;
 
     public bool _fanPathsSearched;
-    private Animation? _gpuFanAnimation;
     private int _gpuFanSpeedRpm;
     private string _gpuName;
     private double _gpuTemp;
@@ -65,8 +56,6 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     private double _gpuUsage;
     private bool _hasBattery;
     private string _kernelVersion;
-    private int _lastCpuRpm;
-    private int _lastGpuRpm;
     private string _osVersion;
     private string _ramTotal;
     private double _ramUsage;
@@ -74,6 +63,7 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     private ObservableCollection<ISeries> _tempSeries;
 
     private readonly SystemMetricsSampler _sampler = new();
+    private readonly ProcessMonitor _processes = new();
     private Window? _hostWindow;
     private bool _refreshInFlight;
 
@@ -88,9 +78,6 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
-        // Initialize rotate transforms
-        _cpuFanRotateTransform = new RotateTransform();
-        _gpuFanRotateTransform = new RotateTransform();
 
         // Initialize default values for battery properties
         BatteryTimeRemaining.Text = "0";
@@ -109,6 +96,20 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     }
 
     public MonitoringViewModel Monitoring { get; }
+
+    public ObservableCollection<ProcessRow> TopProcesses { get; } = new();
+
+    // Wall-clock time of each history point, used for the X-axis labels and the latest-reading marker.
+    private readonly List<DateTime> _tempTimes = new();
+    private readonly ObservableCollection<LiveChartsCore.Defaults.ObservablePoint> _cpuLatest = new();
+    private readonly ObservableCollection<LiveChartsCore.Defaults.ObservablePoint> _gpuLatest = new();
+    private string _latestReadingText = "";
+
+    public string LatestReadingText
+    {
+        get => _latestReadingText;
+        set => SetProperty(ref _latestReadingText, value);
+    }
 
     public string CpuName
     {
@@ -209,8 +210,25 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     // INotifyPropertyChanged implementation
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private async void EndProcess_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is not Button { DataContext: ProcessRow row } || TopLevel.GetTopLevel(this) is not Window owner)
+            return;
+
+        var confirm = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard("End process",
+            $"Ask \"{row.Name}\" (PID {row.Pid}) to close?\nUnsaved work in that app may be lost.",
+            MsBox.Avalonia.Enums.ButtonEnum.YesNo);
+        if (await confirm.ShowWindowDialogAsync(owner) != MsBox.Avalonia.Enums.ButtonResult.Yes) return;
+
+        if (!ProcessMonitor.TryEnd(row.Pid, out var error))
+            await MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard("End process", error).ShowWindowDialogAsync(owner);
+        RefreshDynamicMetricsAsync();
+    }
+
     private void RefreshDynamicMetrics(object? sender, EventArgs e)
     {
+        // Avalonia keeps unselected tab pages attached, so check real visibility on every tick.
+        if (!IsEffectivelyVisible) return;
         RefreshDynamicMetricsAsync();
     }
 
@@ -222,10 +240,14 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
             _refreshInFlight = true;
 
             MetricsSample sample = null!;
+            List<ProcessRow> topProcesses = new();
+            List<string>? gpuClients = null;
             var metricsData = await Task.Run(() =>
             {
                 var data = new MetricsData();
                 sample = _sampler.Sample();
+                topProcesses = _processes.TopByCpu(5);
+                if (_sampler.HasNvidiaGpu) gpuClients = _processes.GpuClients();
 
                 // CPU usage comes from the sampler's delta against the previous tick (no sleep)
                 data.CpuUsage = sample.CpuUsage;
@@ -278,20 +300,40 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                 GpuFanSpeedRPM = metricsData.GpuFanSpeedRPM;
                 CpuFanSpeed.Text = $"{metricsData.CpuFanSpeedRPM}";
                 GpuFanSpeed.Text = $"{metricsData.GpuFanSpeedRPM}";
-                UpdateFanAnimations();
 
                 Monitoring.Apply(sample, metricsData.CpuFanSpeedRPM, metricsData.GpuFanSpeedRPM);
+                Monitoring.GpuClients = gpuClients == null ? "No NVIDIA GPU"
+                    : gpuClients.Count == 0 ? "Nothing — the GPU can sleep"
+                    : string.Join(", ", gpuClients);
+
+                TopProcesses.Clear();
+                foreach (var row in topProcesses) TopProcesses.Add(row);
                 // Handles both energy_* and charge_* style batteries (the PHN16-71 reports charge_*)
                 BatteryTimeRemaining.Text = Monitoring.BatteryTimeLeft;
 
                 // Update temperature history charts
                 if (_cpuTempHistory.Count >= MAX_HISTORY_POINTS)
+                {
                     _cpuTempHistory.RemoveAt(0);
-                _cpuTempHistory.Add(metricsData.CpuTemp);
-
-                if (_gpuTempHistory.Count >= MAX_HISTORY_POINTS)
                     _gpuTempHistory.RemoveAt(0);
+                    _tempTimes.RemoveAt(0);
+                }
+
+                var now = DateTime.Now;
+                _cpuTempHistory.Add(metricsData.CpuTemp);
                 _gpuTempHistory.Add(metricsData.GpuTemp);
+                _tempTimes.Add(now);
+
+                // Single highlighted dot + label on the newest point of each line
+                var last = _cpuTempHistory.Count - 1;
+                _cpuLatest.Clear();
+                _cpuLatest.Add(new LiveChartsCore.Defaults.ObservablePoint(last, metricsData.CpuTemp));
+                _gpuLatest.Clear();
+                if (metricsData.GpuTemp > 0)
+                    _gpuLatest.Add(new LiveChartsCore.Defaults.ObservablePoint(last, metricsData.GpuTemp));
+                LatestReadingText = metricsData.GpuTemp > 0
+                    ? $"LATEST {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}° · GPU {metricsData.GpuTemp:0}°"
+                    : $"LATEST {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}°";
             });
         }
         catch (Exception ex)
@@ -305,7 +347,7 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
         }
     }
 
-    // Only poll sensors while the Monitoring page is on screen and the window isn't minimised.
+    // Only poll sensors while the window is shown and not minimised (the tick also checks page visibility).
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -711,7 +753,9 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                 GeometrySize = 0,
                 LineSmoothness = 0.6,
                 XToolTipLabelFormatter = chartPoint => $"GPU: {chartPoint.Label}°C"
-            }
+            },
+            LatestMarker(_cpuLatest, new SKColor(0x00, 0xE0, 0xFF)),
+            LatestMarker(_gpuLatest, new SKColor(0xFF, 0x8A, 0x00))
         };
 
         // Initialize and configure the chart
@@ -719,12 +763,25 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
         if (_temperatureChart != null)
         {
             _temperatureChart.Series = _tempSeries;
+            // Each 2 s update would otherwise replay a ~1 s transition at 60 fps.
+            _temperatureChart.AnimationsSpeed = TimeSpan.Zero;
+            _temperatureChart.EasingFunction = null;
             _temperatureChart.XAxes = new List<Axis>
             {
                 new()
                 {
-                    Name = "Time",
-                    IsVisible = false
+                    // Clock time of the sample; about one label every 30 s keeps the axis readable.
+                    MinStep = 15,
+                    MinLimit = 0,
+                    MaxLimit = MAX_HISTORY_POINTS - 1,
+                    TextSize = 11,
+                    LabelsPaint = new SolidColorPaint(new SKColor(0x7A, 0x86, 0x94)),
+                    SeparatorsPaint = new SolidColorPaint(new SKColor(0x1C, 0x22, 0x29)) { StrokeThickness = 1 },
+                    Labeler = v =>
+                    {
+                        var i = (int)Math.Round(v);
+                        return i >= 0 && i < _tempTimes.Count ? _tempTimes[i].ToString("HH:mm:ss") : "";
+                    }
                 }
             };
             _temperatureChart.YAxes = new List<Axis>
@@ -735,11 +792,26 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                     MaxLimit = 105,
                     LabelsPaint = new SolidColorPaint(new SKColor(0x7A, 0x86, 0x94)),
                     SeparatorsPaint = new SolidColorPaint(new SKColor(0x1C, 0x22, 0x29)) { StrokeThickness = 1 },
+                    TextSize = 11,
                     Labeler = v => $"{v:0}°"
                 }
             };
         }
     }
+
+    private static ScatterSeries<LiveChartsCore.Defaults.ObservablePoint> LatestMarker(
+        ObservableCollection<LiveChartsCore.Defaults.ObservablePoint> values, SKColor color) => new()
+    {
+        Values = values,
+        GeometrySize = 11,
+        Fill = new SolidColorPaint(new SKColor(0x07, 0x09, 0x0C)),
+        Stroke = new SolidColorPaint(color) { StrokeThickness = 3 },
+        DataLabelsPaint = new SolidColorPaint(color),
+        DataLabelsSize = 12,
+        DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Top,
+        DataLabelsFormatter = p => $"{p.Coordinate.PrimaryValue:0}°",
+        IsHoverable = false
+    };
 
     private double GetCpuUsage()
     {
@@ -1446,101 +1518,6 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
             Console.WriteLine($"Error in GetFanSpeeds: {ex.Message}");
             return (0, 0);
         }
-    }
-
-    private void InitializeFanAnimations(MaterialIcon cpuFanIcon, MaterialIcon gpuFanIcon)
-    {
-        // Set up render transforms
-        cpuFanIcon.RenderTransform = new RotateTransform();
-        gpuFanIcon.RenderTransform = new RotateTransform();
-
-        // Create CPU fan animation
-        _cpuFanAnimation = new Animation
-        {
-            Duration = TimeSpan.FromSeconds(1),
-            IterationCount = IterationCount.Infinite,
-            Children =
-            {
-                new KeyFrame
-                {
-                    Cue = new Cue(0d),
-                    Setters = { new Setter(RotateTransform.AngleProperty, 0d) }
-                },
-                new KeyFrame
-                {
-                    Cue = new Cue(1d),
-                    Setters = { new Setter(RotateTransform.AngleProperty, 360d) }
-                }
-            }
-        };
-
-        // Create GPU fan animation
-        _gpuFanAnimation = new Animation
-        {
-            Duration = TimeSpan.FromSeconds(1),
-            IterationCount = IterationCount.Infinite,
-            Children =
-            {
-                new KeyFrame
-                {
-                    Cue = new Cue(0d),
-                    Setters = { new Setter(RotateTransform.AngleProperty, 0d) }
-                },
-                new KeyFrame
-                {
-                    Cue = new Cue(1d),
-                    Setters = { new Setter(RotateTransform.AngleProperty, 360d) }
-                }
-            }
-        };
-
-        // Start animations
-        _cpuFanAnimation.RunAsync(cpuFanIcon);
-        _gpuFanAnimation.RunAsync(gpuFanIcon);
-    }
-
-    private void UpdateFanAnimations()
-    {
-        try
-        {
-            var cpuFanIcon = this.FindControl<MaterialIcon>("CpuFanIcon");
-            var gpuFanIcon = this.FindControl<MaterialIcon>("GpuFanIcon");
-
-            if (cpuFanIcon == null || gpuFanIcon == null) return;
-
-            if (!_animationsInitialized)
-            {
-                InitializeFanAnimations(cpuFanIcon, gpuFanIcon);
-                _animationsInitialized = true;
-            }
-
-            if (Math.Abs(_cpuFanSpeedRpm - _lastCpuRpm) >= RPM_CHANGE_THRESHOLD)
-                UpdateFanSpeed(_cpuFanAnimation, _cpuFanSpeedRpm, ref _lastCpuRpm);
-
-            if (Math.Abs(_gpuFanSpeedRpm - _lastGpuRpm) > RPM_CHANGE_THRESHOLD)
-                UpdateFanSpeed(_gpuFanAnimation, _gpuFanSpeedRpm, ref _lastGpuRpm);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error in UpdateFanAnimations: {ex.Message}");
-        }
-    }
-
-    private void UpdateFanSpeed(Animation animation, int currentRpm, ref int lastRpm)
-    {
-        if (currentRpm < MIN_RPM_FOR_ANIMATION)
-        {
-            animation.Duration = TimeSpan.FromSeconds(MAX_ANIMATION_DURATION);
-        }
-        else
-        {
-            var durationSeconds = 1000.0 / currentRpm * 2;
-            durationSeconds = Math.Max(MIN_ANIMATION_DURATION,
-                Math.Min(MAX_ANIMATION_DURATION, durationSeconds));
-            animation.Duration = TimeSpan.FromSeconds(durationSeconds);
-        }
-
-        lastRpm = currentRpm;
     }
 
     private (int percentage, string status, double timeRemaining) GetBatteryInfo()

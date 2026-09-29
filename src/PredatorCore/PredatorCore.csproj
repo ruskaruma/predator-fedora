@@ -6,6 +6,11 @@
         <AssemblyName>PredatorCore</AssemblyName>
         <RootNamespace>PredatorCore</RootNamespace>
         <Version>0.1.0</Version>
+        <!-- Low footprint: no ICU locale data (~30 MB), no background GC thread, precompiled for fast startup -->
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+        <TieredPGO>false</TieredPGO>
+        <PublishReadyToRun>true</PublishReadyToRun>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
