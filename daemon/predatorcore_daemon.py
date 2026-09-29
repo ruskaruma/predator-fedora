@@ -27,6 +27,7 @@ from pathlib import Path
 from enum import Enum
 from PowerSourceDetection import PowerSourceDetector 
 from performance import PowerLimitController, FanCurveController, GpuPowerController
+from automation import AutomationController
 from typing import Dict, List, Tuple, Set
 # from KeyboardMonitor import KeyboardMonitor
 
@@ -159,6 +160,7 @@ class DAMXManager:
         self.power_limits = None
         self.fan_curve = None
         self.gpu_power = None
+        self.automation = None
 
     def _get_restart_attempts(self) -> int:
         """Get current restart attempt count"""
@@ -1030,6 +1032,9 @@ class DAMXManager:
         if self.gpu_power and self.gpu_power.available:
             settings["gpu_power"] = self.gpu_power.status()
 
+        if self.automation:
+            settings["automation"] = self.automation.status()
+
         return settings
 
 
@@ -1200,6 +1205,8 @@ class DaemonServer:
 
                 profile = params.get("profile", "")
                 success = self.manager.set_thermal_profile(profile)
+                if success and self.manager.automation:
+                    self.manager.automation.remember_user_profile(profile)
                 return {
                     "success": success,
                     "data": {"profile": profile} if success else None,
@@ -1420,6 +1427,25 @@ class DaemonServer:
                 ok, err = self.manager.gpu_power.set_mode(str(params.get("mode", "")))
                 return {"success": ok, "data": self.manager.gpu_power.status() if ok else None,
                         "error": err or None}
+
+            elif command == "get_automation":
+                if not self.manager.automation:
+                    return {"success": False, "error": "Automation is not available"}
+                return {"success": True, "data": self.manager.automation.status()}
+
+            elif command == "set_automation":
+                if not self.manager.automation:
+                    return {"success": False, "error": "Automation is not available"}
+                ok, err = self.manager.automation.configure(params.get("settings", {}))
+                return {"success": ok, "data": self.manager.automation.status() if ok else None,
+                        "error": err or None}
+
+            elif command == "cycle_thermal_profile":
+                if not self.manager.automation:
+                    return {"success": False, "error": "Automation is not available"}
+                ok, result = self.manager.automation.cycle_profile()
+                return {"success": ok, "data": {"profile": result} if ok else None,
+                        "error": None if ok else result}
 
             elif command == "get_supported_features":
                 return {
@@ -1677,8 +1703,10 @@ class DAMXDaemon:
                 self.manager.available_features.add("gpu_power")
                 self.manager.gpu_power.apply()
 
-            # Initialize power monitor (started in run())
-            self.power_monitor = PowerSourceDetector(self.manager)
+            # Automatic profiles (replaces the old PowerSourceDetector battery rule)
+            self.manager.automation = AutomationController(self.manager, self.config, self.save_config)
+            self.manager.available_features.add("automation")
+            self.power_monitor = None
 
             # Log detected features
             features_str = ", ".join(sorted(self.manager.available_features))
@@ -1713,7 +1741,9 @@ class DAMXDaemon:
         try:
             self.running = True
             self.server = DaemonServer(self.manager)
-            self.power_monitor.start_monitoring()
+            if self.power_monitor:
+                self.power_monitor.start_monitoring()
+            self.manager.automation.start()
             if self.manager.fan_curve:
                 self.manager.fan_curve.start()
             self.server.start()
@@ -1743,6 +1773,9 @@ class DAMXDaemon:
 
         if self.manager and self.manager.fan_curve:
             self.manager.fan_curve.stop()
+
+        if self.manager and self.manager.automation:
+            self.manager.automation.stop()
     
         # Remove PID file
         try:
