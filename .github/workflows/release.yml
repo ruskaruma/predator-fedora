@@ -49,5 +49,7 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             dist/predatorcore-*-linux-x64.tar.gz \
             dist/predatorcore-*-linux-x64.tar.gz.sha256 \
+            dist/predatorcore-linux-x64.tar.gz \
+            dist/predatorcore-linux-x64.tar.gz.sha256 \
             --title "PredatorCore $GITHUB_REF_NAME" \
             --notes-file release-notes.md
