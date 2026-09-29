@@ -55,8 +55,8 @@ public class KeyboardPreview : Control
         var bounds = new Rect(Bounds.Size);
         if (bounds.Width < 50 || bounds.Height < 30) return;
 
-        context.DrawRectangle(new SolidColorBrush(Color.Parse("#0A0D11")),
-            new Pen(new SolidColorBrush(Color.Parse("#1F2630")), 1), bounds, 10, 10);
+        context.DrawRectangle(new SolidColorBrush(Color.Parse("#0A0D11"), 0.55),
+            new Pen(new SolidColorBrush(Colors.White, 0.1), 1), bounds, 12, 12);
 
         const double pad = 14, gap = 5;
         var inner = bounds.Deflate(pad);

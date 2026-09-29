@@ -75,6 +75,12 @@ public sealed class SystemMetricsSampler
     private long _raplMaxUj;
     private long _lastRx, _lastTx;
     private long _lastThrottleMs = -1;
+
+    // The NVIDIA driver only runtime-suspends after ~9 s without clients; querying nvidia-smi every
+    // refresh kept the dGPU awake indefinitely. Query at most every 15 s and reuse the last reading.
+    private static readonly TimeSpan GpuQueryInterval = TimeSpan.FromSeconds(15);
+    private DateTime _lastGpuQuery = DateTime.MinValue;
+    private string[]? _lastGpuFields;
     private const string ThrottleDir = "/sys/devices/system/cpu/cpu0/thermal_throttle";
     private DateTime _lastSampleAt = DateTime.MinValue;
 
@@ -184,14 +190,22 @@ public sealed class SystemMetricsSampler
         {
             s.GpuAsleep = true;
             s.GpuPState = "Sleeping";
+            _lastGpuFields = null; // next wake gets a fresh reading
             return;
         }
 
-        var output = RunCommand("nvidia-smi",
-            "--query-gpu=temperature.gpu,utilization.gpu,power.draw,clocks.gr,memory.used,memory.total,pstate " +
-            "--format=csv,noheader,nounits");
-        var f = output.Split(',').Select(x => x.Trim()).ToArray();
-        if (f.Length < 7) return;
+        if (_lastGpuFields == null || DateTime.UtcNow - _lastGpuQuery >= GpuQueryInterval)
+        {
+            var output = RunCommand("nvidia-smi",
+                "--query-gpu=temperature.gpu,utilization.gpu,power.draw,clocks.gr,memory.used,memory.total,pstate " +
+                "--format=csv,noheader,nounits");
+            var fields = output.Split(',').Select(x => x.Trim()).ToArray();
+            _lastGpuQuery = DateTime.UtcNow;
+            if (fields.Length >= 7) _lastGpuFields = fields;
+        }
+
+        var f = _lastGpuFields;
+        if (f == null) return;
 
         s.GpuTemp = ParseDouble(f[0]);
         s.GpuUsage = ParseDouble(f[1]);
@@ -424,6 +438,11 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
     public string ThrottleText { get => _throttleText; set => Set(ref _throttleText, value); }
     public string ThrottleSummary { get => _throttleSummary; set => Set(ref _throttleSummary, value); }
     public string GpuClients { get => _gpuClients; set => Set(ref _gpuClients, value); }
+    private string _gpuTempText = "—", _gpuLoadText = "—";
+    public string GpuTempText { get => _gpuTempText; set => Set(ref _gpuTempText, value); }
+    public string GpuLoadText { get => _gpuLoadText; set => Set(ref _gpuLoadText, value); }
+    private string _gpuSleepSummary = "";
+    public string GpuSleepSummary { get => _gpuSleepSummary; set => Set(ref _gpuSleepSummary, value); }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -437,6 +456,8 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
         if (!s.GpuPresent) GpuState = "Not detected";
         else if (s.GpuAsleep) GpuState = "Sleeping (saving power)";
         else GpuState = $"Active · {s.GpuPState}";
+        GpuTempText = s.GpuAsleep ? "SLEEP" : s.GpuTemp is { } gt ? $"{gt:0}°" : "—";
+        GpuLoadText = s.GpuAsleep ? "SLEEP" : s.GpuUsage is { } gu ? $"{gu:0}%" : "—";
         GpuClock = s.GpuClockMhz is { } gc ? $"{gc:0} MHz" : "—";
         GpuPower = s.GpuWatts is { } gw ? $"{gw:0.0} W" : "—";
         if (s.GpuMemUsedMb is { } used && s.GpuMemTotalMb is > 0)

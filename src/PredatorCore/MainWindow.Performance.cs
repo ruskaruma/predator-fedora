@@ -60,6 +60,9 @@ public partial class MainWindow
         }
 
         EnsurePerformanceHandlers();
+
+        if (this.FindControl<Dashboard>("DashboardView") is { } dashboard)
+            dashboard.AttachDaemon(_client, _client.IsFeatureAvailable("gpu_power") ? _settings?.GpuPower : null);
     }
 
     private void EnsurePerformanceHandlers()

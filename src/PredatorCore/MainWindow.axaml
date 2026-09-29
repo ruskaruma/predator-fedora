@@ -10,6 +10,8 @@
         Icon="iconTransparent.png"
         WindowStartupLocation="CenterScreen"
         Width="1320" Height="860"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
         MinWidth="1120" MinHeight="640">
 
     <Window.Styles>
@@ -37,10 +39,38 @@
     </Window.Styles>
 
     <Grid>
+        <!-- See-through tinted backdrop (the desktop shows through) plus static ambient light -->
+        <Panel IsHitTestVisible="False">
+            <Border x:Name="BackdropTint">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                        <GradientStop Offset="0" Color="#B80B1016" />
+                        <GradientStop Offset="1" Color="#CC05070A" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+            <Border>
+                <Border.Background>
+                    <RadialGradientBrush Center="85%,5%" GradientOrigin="85%,5%" RadiusX="55%" RadiusY="60%">
+                        <GradientStop Offset="0" Color="#2E00E0FF" />
+                        <GradientStop Offset="1" Color="#0000E0FF" />
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+            <Border>
+                <Border.Background>
+                    <RadialGradientBrush Center="15%,100%" GradientOrigin="15%,100%" RadiusX="50%" RadiusY="55%">
+                        <GradientStop Offset="0" Color="#1FFF8A00" />
+                        <GradientStop Offset="1" Color="#00FF8A00" />
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+        </Panel>
+
         <Grid RowDefinitions="Auto,*">
 
             <!-- ================= Header bar ================= -->
-            <Border Grid.Row="0" Background="{StaticResource PsSidebar}" BorderBrush="{StaticResource PsBorder}"
+            <Border Grid.Row="0" Background="{StaticResource GlassChrome}" BorderBrush="#1AFFFFFF"
                     BorderThickness="0 0 0 1" Height="62">
                 <Grid ColumnDefinitions="210,*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" Margin="20 0 0 0"
@@ -115,7 +145,7 @@
                             <TextBlock Text="MONITORING" />
                         </StackPanel>
                     </TabItem.Header>
-                    <views:Dashboard />
+                    <views:Dashboard x:Name="DashboardView" />
                 </TabItem>
 
                 <!-- ===== Performance: profiles + fans ===== -->

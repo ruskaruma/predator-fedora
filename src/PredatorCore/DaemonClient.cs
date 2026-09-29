@@ -259,6 +259,13 @@ public class DaemonClient : IDisposable
         return _socket.Available > 0;
     }
 
+    public async Task<bool> SetGpuPowerAsync(string mode)
+    {
+        if (!IsFeatureAvailable("gpu_power")) return false;
+        var response = await SendCommandAsync("set_gpu_power", new Dictionary<string, object> { { "mode", mode } });
+        return response.RootElement.GetProperty("success").GetBoolean();
+    }
+
     public async Task<bool> SetPowerLimitsAsync(int pl1, int pl2)
     {
         if (!IsFeatureAvailable("power_limits")) return false;
@@ -643,6 +650,8 @@ public class DaemonSettings
 
     [JsonPropertyName("fan_curve")] public FanCurveSettings? FanCurve { get; set; }
 
+    [JsonPropertyName("gpu_power")] public GpuPowerSettings? GpuPower { get; set; }
+
     [JsonPropertyName("modprobe_parameter")]
     public string ModprobeParameter { get; set; } = "";
 }
@@ -686,4 +695,11 @@ public class FanCurveSettings
     [JsonPropertyName("cpu_percent")] public int CpuPercent { get; set; }
     [JsonPropertyName("gpu_percent")] public int GpuPercent { get; set; }
     [JsonPropertyName("safety_temp")] public int SafetyTemp { get; set; } = 95;
+}
+
+public class GpuPowerSettings
+{
+    [JsonPropertyName("mode")] public string Mode { get; set; } = "auto";
+    [JsonPropertyName("state")] public string State { get; set; } = "unknown";
+    [JsonPropertyName("asleep_percent")] public int AsleepPercent { get; set; }
 }

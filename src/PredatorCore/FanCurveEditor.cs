@@ -90,7 +90,7 @@ public class FanCurveEditor : Control
     public override void Render(DrawingContext ctx)
     {
         var r = Plot;
-        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0A0D11")), new Rect(Bounds.Size), 6);
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0A0D11"), 0.55), new Rect(Bounds.Size), 8);
 
         for (var pct = 0; pct <= 100; pct += 25)
         {

@@ -18,7 +18,8 @@ Built and tuned on an **Acer Predator Helios Neo 16 (PHN16-71)** running Fedora 
 
 - No decorative animations. Fan graphics are static and only redraw when a value changes, and chart transitions are off. Idle CPU use is about 3–5 % of one core.
 - Sensors are polled only while the Monitoring page is open and the window isn't minimised.
-- The NVIDIA GPU is never woken up just to read its sensors. When it's runtime-suspended, the app shows it as *Sleeping* and doesn't run `nvidia-smi`.
+- The NVIDIA GPU is never woken up just to read its sensors. When it's runtime-suspended, the app shows it as *Sleeping* and doesn't run `nvidia-smi`. While it's awake, it's read at most every 15 s, so the driver's ~9 s idle timer can still put it back to sleep.
+- **GPU power** switch: *Auto sleep* lets the RTX 4060 power down whenever nothing needs it; *Always on* keeps it ready for games and CUDA.
 - CPU usage, package power and network rates are worked out from the change since the previous sample, so an update never has to pause to take a measurement.
 - A single `nvidia-smi` call per refresh reads all GPU fields at once.
 - Battery maths handles both `energy_*` and `charge_*` sysfs batteries. The PHN16-71 reports `charge_*`.

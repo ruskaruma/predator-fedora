@@ -746,11 +746,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _ => "balanced"
         };
 
-        await _client.SetThermalProfileAsync(profile);
+        // Settings reloads re-check the current profile's button. Only write to the hardware on a real
+        // change: every profile write makes the firmware reset its per-mode power limits.
+        var alreadyActive = string.Equals(_settings?.ThermalProfile?.Current, profile,
+            StringComparison.OrdinalIgnoreCase);
+        if (!alreadyActive) await _client.SetThermalProfileAsync(profile);
 
         if (profile == "quiet")
         {
-            await _client.SetFanSpeedAsync(0, 0);
+            if (!alreadyActive) await _client.SetFanSpeedAsync(0, 0);
             _isManualFanControl = false;
             if (!AppState.DevMode)
             {
@@ -778,6 +782,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 };
         }
 
+        if (alreadyActive) return;
         await Task.Delay(1000);
         await LoadSettingsAsync();
     }

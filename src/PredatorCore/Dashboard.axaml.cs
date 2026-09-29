@@ -44,14 +44,14 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     private int _cpuFanSpeedRpm;
     private string _cpuName;
     private double _cpuTemp;
-    private ObservableCollection<double> _cpuTempHistory;
+    private ObservableCollection<LiveChartsCore.Defaults.ObservablePoint> _cpuTempHistory = new();
     private double _cpuUsage;
 
     public bool _fanPathsSearched;
     private int _gpuFanSpeedRpm;
     private string _gpuName;
     private double _gpuTemp;
-    private ObservableCollection<double> _gpuTempHistory;
+    private ObservableCollection<LiveChartsCore.Defaults.ObservablePoint> _gpuTempHistory = new();
     private GpuType _gpuType = GpuType.Unknown;
     private double _gpuUsage;
     private bool _hasBattery;
@@ -99,8 +99,9 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
 
     public ObservableCollection<ProcessRow> TopProcesses { get; } = new();
 
-    // Wall-clock time of each history point, used for the X-axis labels and the latest-reading marker.
-    private readonly List<DateTime> _tempTimes = new();
+    // Raw samples. The chart is right-anchored: X is "seconds ago", so NOW is always the right edge.
+    private readonly List<(DateTime time, double cpu, double? gpu)> _tempSamples = new();
+    private const double HISTORY_SECONDS = 120;
     private readonly ObservableCollection<LiveChartsCore.Defaults.ObservablePoint> _cpuLatest = new();
     private readonly ObservableCollection<LiveChartsCore.Defaults.ObservablePoint> _gpuLatest = new();
     private string _latestReadingText = "";
@@ -210,6 +211,37 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     // INotifyPropertyChanged implementation
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private DaemonClient? _daemon;
+    private bool _updatingGpuMode;
+
+    /// <summary>Called by MainWindow once the daemon settings are loaded.</summary>
+    public void AttachDaemon(DaemonClient client, GpuPowerSettings? gpuPower)
+    {
+        _daemon = client;
+        if (this.FindControl<Border>("GpuPowerControls") is { } controls) controls.IsVisible = gpuPower != null;
+        if (gpuPower == null) return;
+
+        _updatingGpuMode = true;
+        if (this.FindControl<RadioButton>(gpuPower.Mode == "on" ? "GpuAlwaysOnRadio" : "GpuAutoSleepRadio") is { } rb)
+            rb.IsChecked = true;
+        _updatingGpuMode = false;
+        Monitoring.GpuSleepSummary = $"Asleep {gpuPower.AsleepPercent}% of the time since boot";
+    }
+
+    private async void GpuPowerMode_OnChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_updatingGpuMode || _daemon == null || sender is not RadioButton { IsChecked: true, Tag: string mode })
+            return;
+        try
+        {
+            await _daemon.SetGpuPowerAsync(mode);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"GPU power mode error: {ex.Message}");
+        }
+    }
+
     private async void EndProcess_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (sender is not Button { DataContext: ProcessRow row } || TopLevel.GetTopLevel(this) is not Window owner)
@@ -312,28 +344,29 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                 BatteryTimeRemaining.Text = Monitoring.BatteryTimeLeft;
 
                 // Update temperature history charts
-                if (_cpuTempHistory.Count >= MAX_HISTORY_POINTS)
+                // A sleeping dGPU reports no temperature: record a gap, not a plunge to 0°.
+                var now = DateTime.Now;
+                double? gpu = metricsData.GpuTemp > 0 ? metricsData.GpuTemp : null;
+                _tempSamples.Add((now, metricsData.CpuTemp, gpu));
+                _tempSamples.RemoveAll(x => (now - x.time).TotalSeconds > HISTORY_SECONDS);
+
+                _cpuTempHistory.Clear();
+                _gpuTempHistory.Clear();
+                foreach (var (time, cpu, g) in _tempSamples)
                 {
-                    _cpuTempHistory.RemoveAt(0);
-                    _gpuTempHistory.RemoveAt(0);
-                    _tempTimes.RemoveAt(0);
+                    var ago = -(now - time).TotalSeconds;
+                    _cpuTempHistory.Add(new LiveChartsCore.Defaults.ObservablePoint(ago, cpu));
+                    _gpuTempHistory.Add(new LiveChartsCore.Defaults.ObservablePoint(ago, g));
                 }
 
-                var now = DateTime.Now;
-                _cpuTempHistory.Add(metricsData.CpuTemp);
-                _gpuTempHistory.Add(metricsData.GpuTemp);
-                _tempTimes.Add(now);
-
-                // Single highlighted dot + label on the newest point of each line
-                var last = _cpuTempHistory.Count - 1;
+                // Highlighted NOW dot + value label at the right edge of each line
                 _cpuLatest.Clear();
-                _cpuLatest.Add(new LiveChartsCore.Defaults.ObservablePoint(last, metricsData.CpuTemp));
+                _cpuLatest.Add(new LiveChartsCore.Defaults.ObservablePoint(0, metricsData.CpuTemp));
                 _gpuLatest.Clear();
-                if (metricsData.GpuTemp > 0)
-                    _gpuLatest.Add(new LiveChartsCore.Defaults.ObservablePoint(last, metricsData.GpuTemp));
+                if (gpu.HasValue) _gpuLatest.Add(new LiveChartsCore.Defaults.ObservablePoint(0, gpu));
                 LatestReadingText = metricsData.GpuTemp > 0
-                    ? $"LATEST {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}° · GPU {metricsData.GpuTemp:0}°"
-                    : $"LATEST {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}°";
+                    ? $"NOW {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}° · GPU {metricsData.GpuTemp:0}°"
+                    : $"NOW {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}° · GPU ASLEEP";
             });
         }
         catch (Exception ex)
@@ -446,8 +479,10 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
         try
         {
             // Check for NVIDIA GPU
-            if (Directory.Exists("/sys/class/drm/card0/device/driver/module/nvidia") ||
-                RunCommand("lspci", "").Contains("NVIDIA"))
+            // sysfs vendor IDs are cached by the kernel, so this never wakes a sleeping dGPU (lspci can)
+            if (Directory.Exists("/sys/bus/pci/devices") && Directory.GetDirectories("/sys/bus/pci/devices")
+                    .Any(d => File.Exists($"{d}/vendor") && File.ReadAllText($"{d}/vendor").Trim() == "0x10de" &&
+                              File.ReadAllText($"{d}/class").StartsWith("0x03")))
             {
                 _gpuType = GpuType.Nvidia;
                 return;
@@ -501,7 +536,15 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
 
     private string GetNvidiaGpuName()
     {
-        // Try nvidia-smi first (most reliable)
+        // Read the driver's proc entry first: unlike nvidia-smi it doesn't wake a runtime-suspended GPU
+        foreach (var info in Directory.Exists("/proc/driver/nvidia/gpus")
+                     ? Directory.GetDirectories("/proc/driver/nvidia/gpus") : Array.Empty<string>())
+        {
+            var model = File.Exists($"{info}/information")
+                ? Regex.Match(File.ReadAllText($"{info}/information"), @"Model:\s+(.+)") : Match.Empty;
+            if (model.Success) return model.Groups[1].Value.Trim();
+        }
+
         var nvidiaSmiOutput = RunCommand("nvidia-smi", "--query-gpu=name --format=csv,noheader");
         if (!string.IsNullOrWhiteSpace(nvidiaSmiOutput)) return nvidiaSmiOutput.Trim();
 
@@ -586,6 +629,9 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
             switch (_gpuType)
             {
                 case GpuType.Nvidia:
+                    // sysfs module version doesn't wake the GPU; nvidia-smi is only a fallback
+                    if (File.Exists("/sys/module/nvidia/version"))
+                        return File.ReadAllText("/sys/module/nvidia/version").Trim();
                     var nvidiaOutput = RunCommand("nvidia-smi", "--query-gpu=driver_version --format=csv,noheader");
                     if (!string.IsNullOrWhiteSpace(nvidiaOutput)) return nvidiaOutput.Trim();
                     break;
@@ -727,14 +773,14 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     private void InitializeTemperatureGraph()
     {
         // Initialize collections
-        _cpuTempHistory = new ObservableCollection<double>();
-        _gpuTempHistory = new ObservableCollection<double>();
+        _cpuTempHistory.Clear();
+        _gpuTempHistory.Clear();
 
         // Initialize series
         // PredatorSense palette: CPU cyan, GPU orange. Points hidden to keep redraws cheap.
         _tempSeries = new ObservableCollection<ISeries>
         {
-            new LineSeries<double>
+            new LineSeries<LiveChartsCore.Defaults.ObservablePoint>
             {
                 Values = _cpuTempHistory,
                 Name = "CPU",
@@ -744,7 +790,7 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                 LineSmoothness = 0.6,
                 XToolTipLabelFormatter = chartPoint => $"CPU: {chartPoint.Label}°C"
             },
-            new LineSeries<double>
+            new LineSeries<LiveChartsCore.Defaults.ObservablePoint>
             {
                 Values = _gpuTempHistory,
                 Name = "GPU",
@@ -770,17 +816,19 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
             {
                 new()
                 {
-                    // Clock time of the sample; about one label every 30 s keeps the axis readable.
-                    MinStep = 15,
-                    MinLimit = 0,
-                    MaxLimit = MAX_HISTORY_POINTS - 1,
+                    // Right-anchored: 0 = now, negatives are seconds ago. Labels every 30 s.
+                    MinLimit = -HISTORY_SECONDS,
+                    MaxLimit = 4, // small margin so the NOW dot isn't clipped
+                    ForceStepToMin = true,
+                    MinStep = 30,
                     TextSize = 11,
                     LabelsPaint = new SolidColorPaint(new SKColor(0x7A, 0x86, 0x94)),
                     SeparatorsPaint = new SolidColorPaint(new SKColor(0x1C, 0x22, 0x29)) { StrokeThickness = 1 },
                     Labeler = v =>
                     {
-                        var i = (int)Math.Round(v);
-                        return i >= 0 && i < _tempTimes.Count ? _tempTimes[i].ToString("HH:mm:ss") : "";
+                        var seconds = (int)Math.Round(-v);
+                        if (seconds <= 0) return "NOW";
+                        return seconds % 60 == 0 ? $"-{seconds / 60}m" : seconds > 60 ? $"-{seconds / 60}m{seconds % 60}" : $"-{seconds}s";
                     }
                 }
             };
@@ -806,10 +854,6 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
         GeometrySize = 11,
         Fill = new SolidColorPaint(new SKColor(0x07, 0x09, 0x0C)),
         Stroke = new SolidColorPaint(color) { StrokeThickness = 3 },
-        DataLabelsPaint = new SolidColorPaint(color),
-        DataLabelsSize = 12,
-        DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Top,
-        DataLabelsFormatter = p => $"{p.Coordinate.PrimaryValue:0}°",
         IsHoverable = false
     };
 

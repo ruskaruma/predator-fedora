@@ -26,6 +26,46 @@
         <SolidColorBrush x:Key="PsCritical" Color="#FF3B4E" />
         <SolidColorBrush x:Key="PsGood" Color="#2BD97C" />
 
+        <!-- Glass surfaces: translucent fills let the window's ambient light show through; a lit top
+             edge sells the "glass" look. All static brushes, so no per-frame cost. -->
+        <LinearGradientBrush x:Key="GlassFill" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#99161D26" />
+            <GradientStop Offset="1" Color="#8C0A0E13" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassFillRaised" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#1FFFFFFF" />
+            <GradientStop Offset="1" Color="#08FFFFFF" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassEdge" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#4DFFFFFF" />
+            <GradientStop Offset="0.25" Color="#1AFFFFFF" />
+            <GradientStop Offset="1" Color="#0DFFFFFF" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassEdgeAccent" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#FF7FF3FF" />
+            <GradientStop Offset="1" Color="#6600E0FF" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassChrome" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#B30E1319" />
+            <GradientStop Offset="1" Color="#A607090C" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassButton" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#8CF6FF" />
+            <GradientStop Offset="0.48" Color="#1FE3FF" />
+            <GradientStop Offset="0.52" Color="#00CFEF" />
+            <GradientStop Offset="1" Color="#00A6C7" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassButtonHover" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#B3F9FF" />
+            <GradientStop Offset="0.48" Color="#55EBFF" />
+            <GradientStop Offset="0.52" Color="#1FDDF7" />
+            <GradientStop Offset="1" Color="#00B8D4" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassTileChecked" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#4000E0FF" />
+            <GradientStop Offset="1" Color="#1400E0FF" />
+        </LinearGradientBrush>
+
         <!-- Fluent control accents (sliders, toggles, checkboxes, combo focus) -->
         <Color x:Key="SystemAccentColor">#00E0FF</Color>
         <Color x:Key="SystemAccentColorLight1">#33E7FF</Color>
@@ -108,10 +148,10 @@
 
         <!-- ============ Surfaces ============ -->
         <Style Selector="Border.Card">
-            <Setter Property="Background" Value="{StaticResource PsSurface}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PsBorder}" />
+            <Setter Property="Background" Value="{StaticResource GlassFill}" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="18 16" />
             <Setter Property="Margin" Value="0 0 0 14" />
         </Style>
@@ -126,14 +166,16 @@
         </Style>
 
         <Style Selector="Border.Tile">
-            <Setter Property="Background" Value="{StaticResource PsSurfaceRaised}" />
-            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="12 10" />
         </Style>
 
         <Style Selector="Border.Chip">
-            <Setter Property="Background" Value="{StaticResource PsSurface}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PsBorder}" />
+            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="14" />
             <Setter Property="Padding" Value="12 5" />
@@ -145,8 +187,8 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <DockPanel>
-                        <Border DockPanel.Dock="Left" Width="210" Background="{StaticResource PsSidebar}"
-                                BorderBrush="{StaticResource PsBorder}" BorderThickness="0 0 1 0">
+                        <Border DockPanel.Dock="Left" Width="210" Background="{StaticResource GlassChrome}"
+                                BorderBrush="#1AFFFFFF" BorderThickness="0 0 1 0">
                             <ItemsPresenter Name="PART_ItemsPresenter" Margin="0 12 0 0"
                                             ItemsPanel="{TemplateBinding ItemsPanel}" />
                         </Border>
@@ -194,7 +236,12 @@
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
         </Style>
         <Style Selector="TabControl.Nav > TabItem:selected">
-            <Setter Property="Background" Value="{StaticResource PsAccentSoft}" />
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                    <GradientStop Offset="0" Color="#3300E0FF" />
+                    <GradientStop Offset="1" Color="#0000E0FF" />
+                </LinearGradientBrush>
+            </Setter>
             <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
         </Style>
         <Style Selector="TabControl.Nav > TabItem:selected /template/ Border#navIndicator">
@@ -206,15 +253,17 @@
             <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="LetterSpacing" Value="1" />
-            <Setter Property="Background" Value="{StaticResource PsAccent}" />
+            <Setter Property="Background" Value="{StaticResource GlassButton}" />
             <Setter Property="Foreground" Value="#031318" />
-            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="#99FFFFFF" />
+            <Setter Property="BorderThickness" Value="0 1 0 0" />
             <Setter Property="Padding" Value="18 8" />
-            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#5CEBFF" />
+            <Setter Property="Background" Value="{StaticResource GlassButtonHover}" />
+            <Setter Property="BorderBrush" Value="#CCFFFFFF" />
             <Setter Property="Foreground" Value="#031318" />
         </Style>
         <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
@@ -227,13 +276,13 @@
         </Style>
 
         <Style Selector="Button.Secondary">
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PsBorder}" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style Selector="Button.Secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource PsSurfaceRaised}" />
+            <Setter Property="Background" Value="{StaticResource GlassTileChecked}" />
             <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
             <Setter Property="BorderBrush" Value="{StaticResource PsAccent}" />
         </Style>
@@ -245,11 +294,11 @@
             <Setter Property="LetterSpacing" Value="1" />
             <Setter Property="Width" Value="128" />
             <Setter Property="Height" Value="104" />
-            <Setter Property="Background" Value="{StaticResource PsSurfaceRaised}" />
+            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
             <Setter Property="Foreground" Value="{StaticResource PsMuted}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PsBorder}" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="8" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -257,7 +306,7 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <Panel>
-                        <Border Name="glow" CornerRadius="8" Margin="-3" Background="Transparent" />
+                        <Border Name="glow" CornerRadius="12" Margin="-3" Background="Transparent" />
                         <Border Name="border"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
@@ -285,11 +334,11 @@
         </Style>
         <Style Selector="RadioButton:checked">
             <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PsAccent}" />
-            <Setter Property="Background" Value="#0B1C22" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassEdgeAccent}" />
+            <Setter Property="Background" Value="{StaticResource GlassTileChecked}" />
         </Style>
         <Style Selector="RadioButton:checked /template/ Border#glow">
-            <Setter Property="Background" Value="#1400E0FF" />
+            <Setter Property="Background" Value="#1F00E0FF" />
         </Style>
         <Style Selector="RadioButton:disabled">
             <Setter Property="Opacity" Value="0.4" />
@@ -320,9 +369,9 @@
         </Style>
 
         <Style Selector="ComboBox">
-            <Setter Property="Background" Value="{StaticResource PsSurfaceRaised}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PsBorder}" />
-            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
+            <Setter Property="CornerRadius" Value="6" />
         </Style>
 
         <Style Selector="ScrollViewer">
