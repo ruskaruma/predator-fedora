@@ -5,6 +5,8 @@
 
 A PredatorSense-style control center for Acer Predator laptops on Linux. It covers performance modes, fan control, 4-zone RGB lighting, battery care and live hardware monitoring.
 
+**One-click download:** <https://github.com/ruskaruma/predator-fedora/releases/latest/download/predatorcore-linux-x64.tar.gz> (see [Download](#download) for install steps).
+
 Built and tuned on an **Acer Predator Helios Neo 16 (PHN16-71)** running Fedora 44 (i9-13900HX + RTX 4060 laptop GPU), but it should work on any Predator or Nitro laptop supported by the [Linuwu-Sense](https://github.com/0x7375646F/Linuwu-Sense) driver.
 
 ## Features
@@ -45,7 +47,17 @@ sudo systemd-tmpfiles --create /etc/tmpfiles.d/predatorcore-rapl.conf
 
 ## Download
 
-**[⬇ Download the latest version](https://github.com/ruskaruma/predator-fedora/releases/latest/download/predatorcore-linux-x64.tar.gz)**. The link always points to the newest release, and the file is self-contained, so no .NET install is needed. From a terminal:
+**[⬇ Download the latest version](https://github.com/ruskaruma/predator-fedora/releases/latest/download/predatorcore-linux-x64.tar.gz)**. The file is self-contained, so no .NET install is needed.
+
+**Shareable link.** It always points to the newest release, so it never needs updating:
+
+```
+https://github.com/ruskaruma/predator-fedora/releases/latest/download/predatorcore-linux-x64.tar.gz
+```
+
+Checksum: [`predatorcore-linux-x64.tar.gz.sha256`](https://github.com/ruskaruma/predator-fedora/releases/latest/download/predatorcore-linux-x64.tar.gz.sha256). Older versions are on the [Releases page](https://github.com/ruskaruma/predator-fedora/releases).
+
+From a terminal:
 
 ```bash
 curl -LO https://github.com/ruskaruma/predator-fedora/releases/latest/download/predatorcore-linux-x64.tar.gz
