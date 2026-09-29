@@ -6,14 +6,17 @@ Built and tuned on an **Acer Predator Helios Neo 16 (PHN16-71)** running Fedora 
 
 ## Features
 
-- **Monitoring**: CPU and GPU temperature and load gauges, average and peak clock, CPU package power, GPU clock, board power, VRAM and power state, fan RPM and duty, 2-minute temperature history, RAM and swap, disk and NVMe temperature, network throughput, and battery health, cycle count, draw and time left.
-- **Performance**: Eco, Quiet, Balanced, Performance and Turbo modes. Fans can run on the firmware's Auto curve, at Max (about 7400 RPM on the PHN16-71), or at custom CPU and GPU fan speeds.
+- **Monitoring**: a thermal-throttling indicator, the top processes heating the laptop (with an End button), what's keeping the NVIDIA GPU awake, CPU and GPU temperature and load gauges, average and peak clock, CPU package power, GPU clock, board power, VRAM and power state, fan RPM and duty, 2-minute temperature history, RAM and swap, disk and NVMe temperature, network throughput, and battery health, cycle count, draw and time left.
+- **Performance**: Eco, Quiet, Balanced, Performance and Turbo modes.
+- **CPU power limits**: set the sustained (PL1) and burst (PL2) package power. Your limits apply on top of every mode and are re-applied after mode changes, sleep and reboot. The stock limits allow 157 W bursts in *every* mode, which is what sends the i9 to 100 °C on light loads.
+- **Fans**: the firmware's Auto curve, Max (about 7400 RPM on the PHN16-71), fixed custom speeds, or **custom temperature curves** for the CPU and GPU fans. Curves are edited by dragging points, and a 95 °C safety override always applies.
 - **Lighting**: per-zone static colours with a live keyboard preview, brightness, hardware effects (breathing, wave, neon, …) and backlight timeout.
 - **Battery**: 80 % health-mode charge limit, calibration, and USB charging while powered off.
 - **Settings**: LCD overdrive and the boot animation and sound.
 
 ### Built to go easy on the hardware
 
+- No decorative animations. Fan graphics are static and only redraw when a value changes, and chart transitions are off. Idle CPU use is about 3–5 % of one core.
 - Sensors are polled only while the Monitoring page is open and the window isn't minimised.
 - The NVIDIA GPU is never woken up just to read its sensors. When it's runtime-suspended, the app shows it as *Sleeping* and doesn't run `nvidia-smi`.
 - CPU usage, package power and network rates are worked out from the change since the previous sample, so an update never has to pause to take a measurement.
@@ -44,6 +47,14 @@ sudo systemd-tmpfiles --create /etc/tmpfiles.d/predatorcore-rapl.conf
 ```
 
 This builds a self-contained binary and installs it to `/opt/predatorcore`, together with a desktop entry and the `predatorcore` command.
+
+Power limits and fan curves need the PredatorCore daemon. The installer below runs it in place of an existing DAMX daemon, using a systemd drop-in that is easy to undo:
+
+```bash
+sudo ./scripts/install-daemon.sh
+```
+
+To use your own artwork on your machine only, put `icon.png`, `iconTransparent.png` and/or a `hicolor/` tree in `~/.local/share/predatorcore/icons/`. `python3 assets/make_icon.py <dir> --emblem logo.png` renders any logo with the same glass finish.
 
 For development:
 

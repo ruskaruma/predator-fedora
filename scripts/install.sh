@@ -18,7 +18,10 @@ echo "==> Installing to $PREFIX (needs sudo)"
 sudo install -d "$PREFIX"
 sudo install -m 755 "$PUBLISH_DIR/PredatorCore" "$PREFIX/PredatorCore"
 sudo install -m 644 "$REPO_DIR/src/PredatorCore/icon.png" "$PREFIX/icon.png"
-sudo install -D -m 644 "$REPO_DIR/src/PredatorCore/icon.png" /usr/share/icons/hicolor/256x256/apps/predatorcore.png
+for dir in "$REPO_DIR"/assets/hicolor/*/; do
+    size="$(basename "$dir")"
+    sudo install -D -m 644 "$dir/apps/predatorcore.png" "/usr/share/icons/hicolor/$size/apps/predatorcore.png"
+done
 sudo ln -sf "$PREFIX/PredatorCore" /usr/local/bin/predatorcore
 
 sudo tee /usr/share/applications/predatorcore.desktop >/dev/null <<EOF
@@ -29,6 +32,7 @@ Exec=$PREFIX/PredatorCore
 Icon=predatorcore
 Terminal=false
 Type=Application
+StartupWMClass=PredatorCore
 Categories=Utility;System;Settings;
 Keywords=acer;predator;fan;rgb;keyboard;monitor;
 EOF
@@ -46,5 +50,19 @@ EOF
     sudo systemctl restart nitro-key-detection.service 2>/dev/null || true
 fi
 
+# Optional local artwork: icons in ~/.local/share/predatorcore/icons/hicolor override the defaults for
+# this user only (the app also picks up icon.png / iconTransparent.png from that folder at runtime).
+LOCAL_ICONS="${XDG_DATA_HOME:-$HOME/.local/share}/predatorcore/icons/hicolor"
+if [ -d "$LOCAL_ICONS" ]; then
+    echo "==> Using local icon override from $LOCAL_ICONS"
+    for dir in "$LOCAL_ICONS"/*/; do
+        size="$(basename "$dir")"
+        install -D -m 644 "$dir/apps/predatorcore.png" \
+            "${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/$size/apps/predatorcore.png"
+    done
+fi
+
+sudo gtk-update-icon-cache -q /usr/share/icons/hicolor 2>/dev/null || true
+gtk-update-icon-cache -q "${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor" 2>/dev/null || true
 sudo update-desktop-database -q /usr/share/applications 2>/dev/null || true
 echo "==> Done. Launch 'PredatorCore' from your app menu or run: predatorcore"
