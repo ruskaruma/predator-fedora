@@ -1006,7 +1006,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 3 => 30,
                 _ => 0
             };
+            // Loading settings sets SelectedIndex too; only write when the user actually changed it.
+            if (level.ToString() == (_settings?.UsbCharging ?? "")) return;
             await _client.SetUsbChargingAsync(level);
+            if (_settings != null) _settings.UsbCharging = level.ToString();
         }
     }
 
