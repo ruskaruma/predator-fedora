@@ -26,7 +26,7 @@ import traceback
 from pathlib import Path
 from enum import Enum
 from PowerSourceDetection import PowerSourceDetector 
-from performance import PowerLimitController, FanCurveController
+from performance import PowerLimitController, FanCurveController, GpuPowerController
 from typing import Dict, List, Tuple, Set
 # from KeyboardMonitor import KeyboardMonitor
 
@@ -158,6 +158,7 @@ class DAMXManager:
         self.power_monitor = None
         self.power_limits = None
         self.fan_curve = None
+        self.gpu_power = None
 
     def _get_restart_attempts(self) -> int:
         """Get current restart attempt count"""
@@ -1026,6 +1027,9 @@ class DAMXManager:
         if self.fan_curve and self.fan_curve.available:
             settings["fan_curve"] = self.fan_curve.status()
 
+        if self.gpu_power and self.gpu_power.available:
+            settings["gpu_power"] = self.gpu_power.status()
+
         return settings
 
 
@@ -1405,6 +1409,18 @@ class DaemonServer:
                 return {"success": ok, "data": self.manager.fan_curve.status() if ok else None,
                         "error": err or None}
 
+            elif command == "get_gpu_power":
+                if not self.manager.gpu_power or not self.manager.gpu_power.available:
+                    return {"success": False, "error": "GPU power control is not supported on this device"}
+                return {"success": True, "data": self.manager.gpu_power.status()}
+
+            elif command == "set_gpu_power":
+                if not self.manager.gpu_power or not self.manager.gpu_power.available:
+                    return {"success": False, "error": "GPU power control is not supported on this device"}
+                ok, err = self.manager.gpu_power.set_mode(str(params.get("mode", "")))
+                return {"success": ok, "data": self.manager.gpu_power.status() if ok else None,
+                        "error": err or None}
+
             elif command == "get_supported_features":
                 return {
                     "success": True,
@@ -1656,6 +1672,10 @@ class DAMXDaemon:
                 self.manager.power_limits)
             if self.manager.fan_curve.available and "fan_speed" in self.manager.available_features:
                 self.manager.available_features.add("fan_curve")
+            self.manager.gpu_power = GpuPowerController(self.config, self.save_config)
+            if self.manager.gpu_power.available:
+                self.manager.available_features.add("gpu_power")
+                self.manager.gpu_power.apply()
 
             # Initialize power monitor (started in run())
             self.power_monitor = PowerSourceDetector(self.manager)

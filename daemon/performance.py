@@ -29,6 +29,7 @@ import logging
 import os
 import subprocess
 import threading
+import time
 from typing import Dict, List, Optional, Tuple
 
 log = logging.getLogger("DAMXDaemon")
@@ -199,6 +200,7 @@ class FanCurveController:
 
         self._current = (-1, -1)
         self._last_temps = (None, None)
+        self._gpu_cache: Tuple[float, Optional[float]] = (0.0, None)
         self._stop = threading.Event()
         self._thread: Optional[threading.Thread] = None
         self._lock = threading.Lock()
@@ -361,10 +363,67 @@ class FanCurveController:
 
     def _gpu_temp(self) -> Optional[float]:
         if not self.nvidia_pci or _read(f"{self.nvidia_pci}/power/runtime_status") != "active":
+            self._gpu_cache = (0.0, None)
             return None  # never wake a suspended dGPU just to read it
+        # The driver suspends only after ~9 s without clients, so polling every tick would keep the
+        # dGPU awake forever. Re-read at most every 15 s.
+        now = time.monotonic()
+        if now - self._gpu_cache[0] < 15:
+            return self._gpu_cache[1]
         try:
             out = subprocess.run(["nvidia-smi", "--query-gpu=temperature.gpu", "--format=csv,noheader,nounits"],
                                  capture_output=True, text=True, timeout=2).stdout.strip()
-            return float(out.splitlines()[0]) if out else None
+            temp = float(out.splitlines()[0]) if out else None
         except (OSError, ValueError, subprocess.SubprocessError, IndexError):
-            return None
+            temp = None
+        self._gpu_cache = (now, temp)
+        return temp
+
+
+class GpuPowerController:
+    """
+    NVIDIA dGPU runtime power: "auto" lets the driver suspend the GPU when nothing uses it
+    (a few watts saved on battery), "on" keeps it powered for instant response.
+    Applies to every PCI function of the GPU (graphics + HDMI audio).
+    """
+
+    MODES = ("auto", "on")
+
+    def __init__(self, config: configparser.ConfigParser, save_config):
+        self.config = config
+        self.save_config = save_config
+        self.gpu = FanCurveController._find_nvidia_pci()
+        slot = self.gpu.rsplit(".", 1)[0] if self.gpu else None
+        self.functions = sorted(glob.glob(f"{slot}.*")) if slot else []
+        self.available = bool(self.gpu) and os.path.exists(f"{self.gpu}/power/control")
+        section = self.config["GpuPower"] if self.config.has_section("GpuPower") else {}
+        self.mode = section.get("Mode", "auto") if section.get("Mode", "auto") in self.MODES else "auto"
+
+    def status(self) -> Dict:
+        active = int(_read(f"{self.gpu}/power/runtime_active_time") or 0)
+        suspended = int(_read(f"{self.gpu}/power/runtime_suspended_time") or 0)
+        return {
+            "mode": self.mode,
+            "state": _read(f"{self.gpu}/power/runtime_status") or "unknown",
+            "asleep_percent": round(100 * suspended / (active + suspended)) if active + suspended else 0,
+        }
+
+    def set_mode(self, mode: str) -> Tuple[bool, str]:
+        if not self.available:
+            return False, "No NVIDIA GPU with runtime power management found"
+        if mode not in self.MODES:
+            return False, f"Mode must be one of {', '.join(self.MODES)}"
+        self.mode = mode
+        self.config["GpuPower"] = {"Mode": mode}
+        self.save_config()
+        return (True, "") if self.apply() else (False, "Failed to set GPU power mode")
+
+    def apply(self) -> bool:
+        if not self.available:
+            return True
+        ok = True
+        for fn in self.functions:
+            if os.path.exists(f"{fn}/power/control"):
+                ok &= _write(f"{fn}/power/control", self.mode)
+        log.info(f"GPU runtime power set to '{self.mode}'")
+        return ok
