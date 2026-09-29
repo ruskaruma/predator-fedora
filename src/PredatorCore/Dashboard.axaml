@@ -1,0 +1,358 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PredatorCore.Dashboard"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:local="clr-namespace:PredatorCore"
+             xmlns:avalonia="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
+             x:DataType="local:Dashboard">
+
+    <UserControl.Styles>
+        <Style Selector="local|ArcGauge">
+            <Setter Property="Width" Value="132" />
+            <Setter Property="Height" Value="132" />
+            <Setter Property="Thickness" Value="9" />
+        </Style>
+        <Style Selector="Grid.KV > TextBlock.Label">
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Grid.KV > TextBlock.Value">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel Margin="28 22 28 10">
+
+            <!-- Page header -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0 0 0 18">
+                <StackPanel>
+                    <TextBlock Text="MONITORING" Classes="SectionHeader" />
+                    <TextBlock Text="{Binding Monitoring.ModelName}" Classes="Hint" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="Chip" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <material:MaterialIcon Kind="ClockOutline" Width="14" Height="14"
+                                               Foreground="{StaticResource PsMuted}" />
+                        <TextBlock Text="{Binding Monitoring.Uptime, StringFormat='Uptime {0}'}"
+                                   Foreground="{StaticResource PsMuted}" FontSize="12" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Row 1: Gauges -->
+            <UniformGrid Columns="4" Margin="0 0 0 14">
+                <Border Classes="Card" Margin="0 0 7 0">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="CPU TEMP" Classes="SubHeader" HorizontalAlignment="Center" />
+                        <Grid Margin="0 6 0 0">
+                            <local:ArcGauge Value="{Binding CpuTemp}" Maximum="100" WarnAt="0.8" CriticalAt="0.93" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="CpuTemperature" Classes="BigValue" HorizontalAlignment="Center"
+                                           Text="{Binding CpuTemp, StringFormat='{}{0:0}°'}" />
+                                <TextBlock Text="CELSIUS" Classes="Label" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="Card" Margin="7 0">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="GPU TEMP" Classes="SubHeader" HorizontalAlignment="Center" />
+                        <Grid Margin="0 6 0 0">
+                            <local:ArcGauge Value="{Binding GpuTemp}" Maximum="100" WarnAt="0.8" CriticalAt="0.9"
+                                            Accent="#FF8A00" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="GpuTemperature" Classes="BigValue" HorizontalAlignment="Center"
+                                           Text="{Binding GpuTemp, StringFormat='{}{0:0}°'}" />
+                                <TextBlock Text="CELSIUS" Classes="Label" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="Card" Margin="7 0">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="CPU LOAD" Classes="SubHeader" HorizontalAlignment="Center" />
+                        <Grid Margin="0 6 0 0">
+                            <local:ArcGauge Value="{Binding CpuUsage}" Maximum="100" WarnAt="0.85" CriticalAt="0.97" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Classes="BigValue" HorizontalAlignment="Center"
+                                           Text="{Binding CpuUsage, StringFormat='{}{0:0}%'}" />
+                                <TextBlock Text="{Binding Monitoring.CpuClock}" Classes="Label"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="Card" Margin="7 0 0 0">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="GPU LOAD" Classes="SubHeader" HorizontalAlignment="Center" />
+                        <Grid Margin="0 6 0 0">
+                            <local:ArcGauge Value="{Binding GpuUsage}" Maximum="100" WarnAt="0.85" CriticalAt="0.97"
+                                            Accent="#FF8A00" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Classes="BigValue" HorizontalAlignment="Center"
+                                           Text="{Binding GpuUsage, StringFormat='{}{0:0}%'}" />
+                                <TextBlock Text="{Binding Monitoring.GpuClock}" Classes="Label"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Row 2: CPU / GPU / Fans -->
+            <Grid ColumnDefinitions="*,*,*" Margin="0 0 0 0">
+                <!-- CPU -->
+                <Border Classes="Card" Grid.Column="0" Margin="0 0 7 14">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <Border Classes="CardAccent" />
+                                <TextBlock x:Name="CpuTitle" Text="PROCESSOR" Classes="SubHeader" />
+                            </StackPanel>
+                            <material:MaterialIcon Grid.Column="1" Kind="Cpu64Bit" Width="22" Height="22"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <TextBlock x:Name="CpuModel" Text="{Binding CpuName}" Classes="Value" FontSize="13"
+                                   TextWrapping="Wrap" />
+                        <Grid Classes="KV" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                              RowSpacing="8">
+                            <TextBlock Grid.Row="0" Text="AVG CLOCK" Classes="Label" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Monitoring.CpuClock}" Classes="Value" />
+                            <TextBlock Grid.Row="1" Text="PEAK CORE" Classes="Label" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Monitoring.CpuClockMax}"
+                                       Classes="Value" />
+                            <TextBlock Grid.Row="2" Text="PACKAGE POWER" Classes="Label" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Monitoring.CpuPower}" Classes="Value" />
+                            <TextBlock Grid.Row="3" Text="THREADS" Classes="Label" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Monitoring.CpuThreadsText}"
+                                       Classes="Value" />
+                            <TextBlock Grid.Row="4" Text="POLICY" Classes="Label" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Monitoring.CpuPolicy}"
+                                       Classes="Value" />
+                        </Grid>
+                        <ProgressBar x:Name="CpuTemperatureBar" Value="{Binding CpuUsage}" Maximum="100" />
+                    </StackPanel>
+                </Border>
+
+                <!-- GPU -->
+                <Border Classes="Card" Grid.Column="1" Margin="7 0 7 14">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <Border Classes="CardAccent" Background="{StaticResource PsAccentOrange}" />
+                                <TextBlock x:Name="GpuTitle" Text="GRAPHICS" Classes="SubHeader"
+                                           Foreground="{StaticResource PsAccentOrange}" />
+                            </StackPanel>
+                            <material:MaterialIcon Grid.Column="1" Kind="Gpu" Width="22" Height="22"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <TextBlock x:Name="GpuModel" Text="{Binding GpuName}" Classes="Value" FontSize="13"
+                                   TextWrapping="Wrap" />
+                        <Grid Classes="KV" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                              RowSpacing="8">
+                            <TextBlock Grid.Row="0" Text="STATE" Classes="Label" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Monitoring.GpuState}" Classes="Value" />
+                            <TextBlock Grid.Row="1" Text="CORE CLOCK" Classes="Label" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Monitoring.GpuClock}" Classes="Value" />
+                            <TextBlock Grid.Row="2" Text="BOARD POWER" Classes="Label" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Monitoring.GpuPower}" Classes="Value" />
+                            <TextBlock Grid.Row="3" Text="VRAM" Classes="Label" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Monitoring.GpuVram}" Classes="Value" />
+                            <TextBlock Grid.Row="4" Text="DRIVER" Classes="Label" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" x:Name="GpuDriver" Text="—" Classes="Value" />
+                        </Grid>
+                        <ProgressBar x:Name="GpuTemperatureBar" Classes="Orange"
+                                     Value="{Binding Monitoring.GpuVramPercent}" Maximum="100" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Fans -->
+                <Border Classes="Card" Grid.Column="2" Margin="7 0 0 14">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <Border Classes="CardAccent" />
+                                <TextBlock x:Name="FanControlTitle" Text="COOLING" Classes="SubHeader" />
+                            </StackPanel>
+                            <material:MaterialIcon Grid.Column="1" Kind="Fan" Width="22" Height="22"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <UniformGrid Columns="2">
+                            <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                <material:MaterialIcon x:Name="CpuFanIcon" Kind="Fan" Width="58" Height="58"
+                                                       Foreground="{StaticResource PsAccent}"
+                                                       HorizontalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                                    <TextBlock x:Name="CpuFanSpeed" Text="0" Classes="BigValue" FontSize="22" />
+                                    <TextBlock Text="RPM" Classes="Label" VerticalAlignment="Bottom" Margin="0 0 0 4" />
+                                </StackPanel>
+                                <TextBlock Text="CPU FAN" Classes="Label" HorizontalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                <material:MaterialIcon x:Name="GpuFanIcon" Kind="Fan" Width="58" Height="58"
+                                                       Foreground="{StaticResource PsAccentOrange}"
+                                                       HorizontalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                                    <TextBlock x:Name="GpuFanSpeed" Text="0" Classes="BigValue" FontSize="22" />
+                                    <TextBlock Text="RPM" Classes="Label" VerticalAlignment="Bottom" Margin="0 0 0 4" />
+                                </StackPanel>
+                                <TextBlock Text="GPU FAN" Classes="Label" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </UniformGrid>
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="CPU DUTY (of 7400 RPM)" Classes="Label" />
+                                <TextBlock Grid.Column="1" Classes="Label"
+                                           Text="{Binding Monitoring.CpuFanPercent, StringFormat='{}{0:0}%'}" />
+                            </Grid>
+                            <ProgressBar Value="{Binding Monitoring.CpuFanPercent}" Maximum="100" />
+                            <Grid ColumnDefinitions="*,Auto" Margin="0 6 0 0">
+                                <TextBlock Text="GPU DUTY (of 7400 RPM)" Classes="Label" />
+                                <TextBlock Grid.Column="1" Classes="Label"
+                                           Text="{Binding Monitoring.GpuFanPercent, StringFormat='{}{0:0}%'}" />
+                            </Grid>
+                            <ProgressBar Classes="Orange" Value="{Binding Monitoring.GpuFanPercent}" Maximum="100" />
+                        </StackPanel>
+                        <!-- Kept for code-behind compatibility -->
+                        <ComboBox x:Name="FanModeSelector" IsVisible="False" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Row 3: Temperature history + Battery -->
+            <Grid ColumnDefinitions="2*,*">
+                <Border Classes="Card" Grid.Column="0" Margin="0 0 7 14">
+                    <StackPanel>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <Border Classes="CardAccent" />
+                                <TextBlock x:Name="TemperatureMonitorTitle" Text="TEMPERATURE HISTORY"
+                                           Classes="SubHeader" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14"
+                                        VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Border Width="10" Height="3" Background="{StaticResource PsAccent}"
+                                            VerticalAlignment="Center" />
+                                    <TextBlock Text="CPU" Classes="Label" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Border Width="10" Height="3" Background="{StaticResource PsAccentOrange}"
+                                            VerticalAlignment="Center" />
+                                    <TextBlock Text="GPU" Classes="Label" />
+                                </StackPanel>
+                                <TextBlock Text="LAST 2 MIN" Classes="Label" />
+                            </StackPanel>
+                        </Grid>
+                        <avalonia:CartesianChart x:Name="TemperatureChart" Height="230" Margin="0 6 0 0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="Card" Grid.Column="1" Margin="7 0 0 14" IsVisible="{Binding HasBattery}">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <Border Classes="CardAccent" Background="{StaticResource PsGood}" />
+                                <TextBlock x:Name="BatteryTitle" Text="BATTERY" Classes="SubHeader"
+                                           Foreground="{StaticResource PsGood}" />
+                            </StackPanel>
+                            <material:MaterialIcon Grid.Column="1" Kind="BatteryHigh" Width="22" Height="22"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock x:Name="BatteryPercentage" Classes="BigValue" FontSize="34"
+                                       Text="{Binding BatteryPercentageInt, StringFormat='{}{0}%'}" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="PowerSource" Text="{Binding BatteryStatus}" Classes="Value"
+                                           FontSize="13" />
+                                <TextBlock Text="{Binding Monitoring.BatteryWatts}" Classes="Label" />
+                            </StackPanel>
+                        </StackPanel>
+                        <ProgressBar x:Name="BatteryLevelBar" Value="0" Maximum="100" Foreground="{StaticResource PsGood}" />
+                        <Grid Classes="KV" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                            <TextBlock Grid.Row="0" Text="TIME LEFT" Classes="Label" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="BatteryTimeRemaining" Text="—"
+                                       Classes="Value" />
+                            <TextBlock Grid.Row="1" Text="HEALTH" Classes="Label" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Monitoring.BatteryHealth}"
+                                       Classes="Value" />
+                            <TextBlock Grid.Row="2" Text="CYCLES" Classes="Label" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Monitoring.BatteryCycles}"
+                                       Classes="Value" />
+                        </Grid>
+                        <ComboBox x:Name="PowerModeSelector" IsVisible="False" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Row 4: Memory / Storage / Network / System -->
+            <UniformGrid Columns="4">
+                <Border Classes="Card" Margin="0 0 7 14">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="MEMORY" Classes="SubHeader" />
+                            <material:MaterialIcon Grid.Column="1" Kind="Memory" Width="18" Height="18"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Monitoring.RamText}" Classes="Value" />
+                        <ProgressBar Value="{Binding Monitoring.RamPercent}" Maximum="100" />
+                        <TextBlock Text="{Binding Monitoring.SwapText, StringFormat='Swap in use: {0}'}"
+                                   Classes="Label" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="Card" Margin="7 0 7 14">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="STORAGE" Classes="SubHeader" />
+                            <material:MaterialIcon Grid.Column="1" Kind="Harddisk" Width="18" Height="18"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Monitoring.DiskText}" Classes="Value" />
+                        <ProgressBar Value="{Binding Monitoring.DiskPercent}" Maximum="100" />
+                        <TextBlock Text="{Binding Monitoring.NvmeTemp, StringFormat='NVMe temperature: {0}'}"
+                                   Classes="Label" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="Card" Margin="7 0 7 14">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="NETWORK" Classes="SubHeader" />
+                            <material:MaterialIcon Grid.Column="1" Kind="Wifi" Width="18" Height="18"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <material:MaterialIcon Kind="ArrowDown" Width="16" Height="16"
+                                                   Foreground="{StaticResource PsAccent}" />
+                            <TextBlock Text="{Binding Monitoring.NetDown}" Classes="Value" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <material:MaterialIcon Kind="ArrowUp" Width="16" Height="16"
+                                                   Foreground="{StaticResource PsAccentOrange}" />
+                            <TextBlock Text="{Binding Monitoring.NetUp}" Classes="Value" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="Card" Margin="7 0 0 14">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="SYSTEM" Classes="SubHeader" />
+                            <material:MaterialIcon Grid.Column="1" Kind="Linux" Width="18" Height="18"
+                                                   Foreground="{StaticResource PsMuted}" />
+                        </Grid>
+                        <TextBlock Text="{Binding OsVersion}" Classes="Value" FontSize="13" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding KernelVersion, StringFormat='Kernel {0}'}" Classes="Label"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Monitoring.LoadAvg, StringFormat='Load {0}'}" Classes="Label" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

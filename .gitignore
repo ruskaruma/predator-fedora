@@ -1,0 +1,9 @@
+bin/
+obj/
+build/
+__pycache__/
+*.pyc
+.idea/
+.vs/
+*.user
+*~

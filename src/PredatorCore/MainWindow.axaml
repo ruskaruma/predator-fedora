@@ -1,0 +1,584 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:PredatorCore"
+        xmlns:material="using:Material.Icons.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="820"
+        x:Class="PredatorCore.MainWindow"
+        Title="PredatorCore"
+        Icon="iconTransparent.png"
+        WindowStartupLocation="CenterScreen"
+        Width="1320" Height="860"
+        MinWidth="1120" MinHeight="640">
+
+    <Window.Styles>
+        <Style Selector="StackPanel.NavHeader">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Spacing" Value="14" />
+        </Style>
+        <Style Selector="StackPanel.NavHeader > material|MaterialIcon">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+        </Style>
+        <Style Selector="StackPanel.NavHeader > TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="LetterSpacing" Value="2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="RadioButton material|MaterialIcon">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+        </Style>
+        <Style Selector="ScrollViewer.Page > StackPanel">
+            <Setter Property="Margin" Value="28 22 28 10" />
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Grid RowDefinitions="Auto,*">
+
+            <!-- ================= Header bar ================= -->
+            <Border Grid.Row="0" Background="{StaticResource PsSidebar}" BorderBrush="{StaticResource PsBorder}"
+                    BorderThickness="0 0 0 1" Height="62">
+                <Grid ColumnDefinitions="210,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" Margin="20 0 0 0"
+                                VerticalAlignment="Center">
+                        <Image Source="iconTransparent.png" Width="28" Height="28" />
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="PREDATOR" FontFamily="{StaticResource OxaniumBoldFont}" FontSize="18"
+                                           LetterSpacing="3" Foreground="{StaticResource PsText}" />
+                                <TextBlock Text="CORE" FontFamily="{StaticResource OxaniumBoldFont}" FontSize="18"
+                                           LetterSpacing="3" Foreground="{StaticResource PsAccent}" />
+                            </StackPanel>
+                            <TextBlock Text="CONTROL CENTER" FontFamily="{StaticResource OxaniumFont}" FontSize="9"
+                                       LetterSpacing="3" Foreground="{StaticResource PsMuted}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Live status chips -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" Margin="0 0 24 0"
+                                VerticalAlignment="Center">
+                        <Border Classes="Chip">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <material:MaterialIcon Kind="PowerPlug" Width="15" Height="15"
+                                                       Foreground="{StaticResource PsGood}"
+                                                       IsVisible="{Binding #PluggedInToggleSwitch.IsChecked}" />
+                                <material:MaterialIcon Kind="Battery" Width="15" Height="15"
+                                                       Foreground="{StaticResource PsWarn}"
+                                                       IsVisible="{Binding !#PluggedInToggleSwitch.IsChecked}" />
+                                <TextBlock Text="AC POWER" FontFamily="{StaticResource OxaniumBoldFont}" FontSize="11"
+                                           LetterSpacing="1" VerticalAlignment="Center"
+                                           IsVisible="{Binding #PluggedInToggleSwitch.IsChecked}" />
+                                <TextBlock Text="ON BATTERY" FontFamily="{StaticResource OxaniumBoldFont}"
+                                           FontSize="11" LetterSpacing="1" VerticalAlignment="Center"
+                                           IsVisible="{Binding !#PluggedInToggleSwitch.IsChecked}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="Chip" BorderBrush="{StaticResource PsAccent}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <material:MaterialIcon Kind="Speedometer" Width="15" Height="15"
+                                                       Foreground="{StaticResource PsAccent}" />
+                                <Panel>
+                                    <Panel.Styles>
+                                        <Style Selector="TextBlock">
+                                            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
+                                            <Setter Property="FontSize" Value="11" />
+                                            <Setter Property="LetterSpacing" Value="1" />
+                                            <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                        </Style>
+                                    </Panel.Styles>
+                                    <TextBlock Text="ECO" IsVisible="{Binding #LowPowerProfileButton.IsChecked}" />
+                                    <TextBlock Text="QUIET" IsVisible="{Binding #QuietProfileButton.IsChecked}" />
+                                    <TextBlock Text="BALANCED" IsVisible="{Binding #BalancedProfileButton.IsChecked}" />
+                                    <TextBlock Text="PERFORMANCE"
+                                               IsVisible="{Binding #PerformanceProfileButton.IsChecked}" />
+                                    <TextBlock Text="TURBO" IsVisible="{Binding #TurboProfileButton.IsChecked}" />
+                                </Panel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ================= Sidebar + pages ================= -->
+            <TabControl x:Name="NavTabs" Grid.Row="1" Classes="Nav">
+
+                <!-- ===== Monitoring ===== -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Classes="NavHeader">
+                            <material:MaterialIcon Kind="ViewDashboardVariant" />
+                            <TextBlock Text="MONITORING" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <views:Dashboard />
+                </TabItem>
+
+                <!-- ===== Performance: profiles + fans ===== -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Classes="NavHeader">
+                            <material:MaterialIcon Kind="RocketLaunch" />
+                            <TextBlock Text="PERFORMANCE" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <ScrollViewer Classes="Page">
+                        <StackPanel>
+                            <TextBlock Text="PERFORMANCE" Classes="SectionHeader" />
+                            <TextBlock Text="Choose how hard the system runs and how the fans respond"
+                                       Classes="SectionSub" />
+
+                            <Border Classes="Card" x:Name="ThermalProfilePanel">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <Border Classes="CardAccent" />
+                                            <TextBlock Text="OPERATING MODE" Classes="SubHeader" />
+                                            <TextBlock Classes="Hint"
+                                                       Text="Eco is offered on battery; Quiet, Performance and Turbo when plugged in." />
+                                        </StackPanel>
+                                        <!-- Read-only power source indicator, driven by PowerSourceDetection -->
+                                        <ToggleSwitch x:Name="PluggedInToggleSwitch" Grid.Column="1"
+                                                      VerticalAlignment="Center" IsChecked="True"
+                                                      IsHitTestVisible="False">
+                                            <ToggleSwitch.OffContent>
+                                                <material:MaterialIcon Kind="BatteryOutline" Width="22" Height="22" />
+                                            </ToggleSwitch.OffContent>
+                                            <ToggleSwitch.OnContent>
+                                                <material:MaterialIcon Kind="PowerPlugOutline" Width="22" Height="22" />
+                                            </ToggleSwitch.OnContent>
+                                        </ToggleSwitch>
+                                    </Grid>
+
+                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0 18 0 6"
+                                               ItemSpacing="12" LineSpacing="12">
+                                        <RadioButton x:Name="LowPowerProfileButton" GroupName="ProfileGroup"
+                                                     IsVisible="{Binding ElementName=PluggedInToggleSwitch, Path=!IsChecked}">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="Leaf" />
+                                                <TextBlock Text="ECO" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton x:Name="QuietProfileButton" GroupName="ProfileGroup"
+                                                     IsVisible="{Binding ElementName=PluggedInToggleSwitch, Path=IsChecked}">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="VolumeLow" />
+                                                <TextBlock Text="QUIET" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton x:Name="BalancedProfileButton" GroupName="ProfileGroup"
+                                                     IsChecked="True">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="ScaleBalance" />
+                                                <TextBlock Text="BALANCED" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton x:Name="PerformanceProfileButton" GroupName="ProfileGroup"
+                                                     IsVisible="{Binding ElementName=PluggedInToggleSwitch, Path=IsChecked}">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="SpeedometerMedium" />
+                                                <TextBlock Text="PERFORMANCE" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton x:Name="TurboProfileButton" GroupName="ProfileGroup"
+                                                     IsVisible="{Binding ElementName=PluggedInToggleSwitch, Path=IsChecked}">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="RocketLaunch" />
+                                                <TextBlock Text="TURBO" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                    </WrapPanel>
+
+                                    <Border Classes="Tile" Margin="0 10 0 0">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <material:MaterialIcon Kind="InformationOutline" Width="16" Height="16"
+                                                                   Foreground="{StaticResource PsAccent}" />
+                                            <TextBlock x:Name="ThermalProfileInfoText" Classes="Hint"
+                                                       Foreground="{StaticResource PsText}"
+                                                       Text="Optimal mix of performance and noise for everyday tasks." />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Card" x:Name="FanControlPanel">
+                                <StackPanel>
+                                    <Border Classes="CardAccent" />
+                                    <TextBlock Text="FAN CONTROL" Classes="SubHeader" />
+                                    <TextBlock Classes="Hint"
+                                               Text="Auto follows the firmware curve. Max runs both fans at full speed (about 7400 RPM)." />
+
+                                    <WrapPanel Orientation="Horizontal" Margin="0 18 0 6" ItemSpacing="12">
+                                        <RadioButton x:Name="AutoFanSpeedRadioButton" GroupName="FanModeGroup"
+                                                     IsChecked="True">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="AutoFix" />
+                                                <TextBlock Text="AUTO" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton x:Name="MaxFanSpeedRadioButton" GroupName="FanModeGroup"
+                                                     Click="MaxFanSpeedRadioButton_OnClick">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="Fan" />
+                                                <TextBlock Text="MAX" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton x:Name="ManualFanSpeedRadioButton" GroupName="FanModeGroup">
+                                            <StackPanel>
+                                                <material:MaterialIcon Kind="Tune" />
+                                                <TextBlock Text="CUSTOM" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                    </WrapPanel>
+
+                                    <TextBlock x:Name="ManualDisabledInfoText" Classes="Hint" Margin="0 8 0 0"
+                                               Text="Custom fan speeds are disabled in Quiet mode to keep noise down."
+                                               IsVisible="{Binding ElementName=QuietProfileButton, Path=IsChecked}" />
+
+                                    <Border Classes="Tile" Margin="0 12 0 0" Padding="18 14"
+                                            IsVisible="{Binding ElementName=ManualFanSpeedRadioButton, Path=IsChecked}">
+                                        <StackPanel Spacing="6">
+                                            <Grid ColumnDefinitions="110,*,60" RowDefinitions="Auto,Auto">
+                                                <TextBlock Grid.Row="0" Text="CPU FAN" Classes="Label"
+                                                           VerticalAlignment="Center" />
+                                                <Slider x:Name="CpuFanSlider" Grid.Row="0" Grid.Column="1" Value="50" />
+                                                <TextBlock x:Name="CpuFanTextBlock" Grid.Row="0" Grid.Column="2"
+                                                           Text="50%" Classes="Value" TextAlignment="Right"
+                                                           VerticalAlignment="Center" />
+
+                                                <TextBlock Grid.Row="1" Text="GPU FAN" Classes="Label"
+                                                           VerticalAlignment="Center" />
+                                                <Slider x:Name="GpuFanSlider" Grid.Row="1" Grid.Column="1" Value="70" />
+                                                <TextBlock x:Name="GpuFanTextBlock" Grid.Row="1" Grid.Column="2"
+                                                           Text="70%" Classes="Value" TextAlignment="Right"
+                                                           VerticalAlignment="Center" />
+                                            </Grid>
+                                            <Grid ColumnDefinitions="*,Auto" Margin="0 6 0 0">
+                                                <TextBlock Classes="Warning" VerticalAlignment="Center"
+                                                           Text="Low fan speeds can let the i9 reach its 100°C limit." />
+                                                <Button x:Name="SetManualSpeedButton" Grid.Column="1"
+                                                        Content="APPLY" Click="SetManualSpeedButton_OnClick" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Lighting ===== -->
+                <TabItem x:Name="KeyboardLightingPanel">
+                    <TabItem.Header>
+                        <StackPanel Classes="NavHeader">
+                            <material:MaterialIcon Kind="KeyboardVariant" />
+                            <TextBlock Text="LIGHTING" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <ScrollViewer Classes="Page">
+                        <StackPanel>
+                            <TextBlock Text="LIGHTING" Classes="SectionHeader" />
+                            <TextBlock Text="4-zone RGB keyboard backlight" Classes="SectionSub" />
+
+                            <Border Classes="Card" x:Name="ZoneColorControlPanel">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <Border Classes="CardAccent" />
+                                            <TextBlock Text="STATIC ZONES" Classes="SubHeader" />
+                                            <TextBlock Classes="Hint" Text="Pick a colour per zone. The preview updates live; press Apply to send it to the keyboard." />
+                                        </StackPanel>
+                                        <Button x:Name="ApplyKeyboardColorsButton" Grid.Column="1"
+                                                Content="APPLY ZONES" VerticalAlignment="Top" />
+                                    </Grid>
+
+                                    <views:KeyboardPreview Height="210" Margin="0 18 0 12"
+                                                           Zone1="{Binding #Zone1ColorPicker.Color}"
+                                                           Zone2="{Binding #Zone2ColorPicker.Color}"
+                                                           Zone3="{Binding #Zone3ColorPicker.Color}"
+                                                           Zone4="{Binding #Zone4ColorPicker.Color}"
+                                                           Brightness="{Binding #KeyBrightnessSlider.Value}" />
+
+                                    <UniformGrid Columns="4">
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                            <TextBlock Text="ZONE 1" Classes="Label" HorizontalAlignment="Center" />
+                                            <ColorPicker x:Name="Zone1ColorPicker" IsAlphaEnabled="False"
+                                                         IsAlphaVisible="False" Color="#00E0FF" Width="150" />
+                                            <Border x:Name="Zone1Border" IsVisible="False" />
+                                        </StackPanel>
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                            <TextBlock Text="ZONE 2" Classes="Label" HorizontalAlignment="Center" />
+                                            <ColorPicker x:Name="Zone2ColorPicker" IsAlphaEnabled="False"
+                                                         IsAlphaVisible="False" Color="#00A2FF" Width="150" />
+                                            <Border x:Name="Zone2Border" IsVisible="False" />
+                                        </StackPanel>
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                            <TextBlock Text="ZONE 3" Classes="Label" HorizontalAlignment="Center" />
+                                            <ColorPicker x:Name="Zone3ColorPicker" IsAlphaEnabled="False"
+                                                         IsAlphaVisible="False" Color="#7A5CFF" Width="150" />
+                                            <Border x:Name="Zone3Border" IsVisible="False" />
+                                        </StackPanel>
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                            <TextBlock Text="ZONE 4" Classes="Label" HorizontalAlignment="Center" />
+                                            <ColorPicker x:Name="Zone4ColorPicker" IsAlphaEnabled="False"
+                                                         IsAlphaVisible="False" Color="#FF2E88" Width="150" />
+                                        </StackPanel>
+                                    </UniformGrid>
+
+                                    <Grid ColumnDefinitions="110,*,60" Margin="0 18 0 0">
+                                        <TextBlock Text="BRIGHTNESS" Classes="Label" VerticalAlignment="Center" />
+                                        <Slider x:Name="KeyBrightnessSlider" Grid.Column="1" Value="100" />
+                                        <TextBlock x:Name="KeyBrightnessText" Grid.Column="2" Text="100%"
+                                                   Classes="Value" TextAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Card" x:Name="KeyboardEffectsPanel">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <Border Classes="CardAccent" />
+                                            <TextBlock Text="DYNAMIC EFFECTS" Classes="SubHeader" />
+                                            <TextBlock Classes="Hint" Text="Animated modes run on the keyboard controller itself." />
+                                        </StackPanel>
+                                        <Button x:Name="LightingEffectsApplyButton" Grid.Column="1"
+                                                Content="APPLY EFFECT" VerticalAlignment="Top" />
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                                          Margin="0 16 0 0" RowSpacing="14">
+                                        <TextBlock Grid.Row="0" Text="EFFECT" Classes="Label" VerticalAlignment="Center" />
+                                        <ComboBox x:Name="LightingModeComboBox" Grid.Row="0" Grid.Column="1"
+                                                  SelectedIndex="0" Width="220">
+                                            <ComboBoxItem Content="Static" />
+                                            <ComboBoxItem Content="Breathing" />
+                                            <ComboBoxItem Content="Neon" />
+                                            <ComboBoxItem Content="Wave" />
+                                            <ComboBoxItem Content="Shifting" />
+                                            <ComboBoxItem Content="Zoom" />
+                                            <ComboBoxItem Content="Meteor" />
+                                            <ComboBoxItem Content="Twinkling" />
+                                        </ComboBox>
+
+                                        <TextBlock Grid.Row="1" Text="SPEED" Classes="Label" VerticalAlignment="Center" />
+                                        <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,50">
+                                            <Slider x:Name="LightingSpeedSlider" Value="5" Maximum="9" Minimum="0"
+                                                    IsSnapToTickEnabled="True" TickFrequency="1" />
+                                            <TextBlock x:Name="LightSpeedTextBlock" Grid.Column="1" Text="5"
+                                                       Classes="Value" TextAlignment="Right" VerticalAlignment="Center" />
+                                        </Grid>
+
+                                        <TextBlock Grid.Row="2" Text="COLOUR" Classes="Label" VerticalAlignment="Center" />
+                                        <ColorPicker x:Name="LightEffectColorPicker" Grid.Row="2" Grid.Column="1"
+                                                     IsAlphaEnabled="False" IsAlphaVisible="False" Color="#00E0FF"
+                                                     HorizontalAlignment="Left" Width="150" />
+
+                                        <TextBlock Grid.Row="3" Text="DIRECTION" Classes="Label" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                            <RadioButton x:Name="LeftToRightRadioButton" GroupName="DirectionGroup"
+                                                         IsChecked="True" Width="110" Height="80">
+                                                <StackPanel>
+                                                    <material:MaterialIcon Kind="ArrowRightBold" />
+                                                    <TextBlock Text="L → R" />
+                                                </StackPanel>
+                                            </RadioButton>
+                                            <RadioButton x:Name="RightToLeftRadioButton" GroupName="DirectionGroup"
+                                                         Width="110" Height="80">
+                                                <StackPanel>
+                                                    <material:MaterialIcon Kind="ArrowLeftBold" />
+                                                    <TextBlock Text="R → L" />
+                                                </StackPanel>
+                                            </RadioButton>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Card" x:Name="BacklightTimeoutControls">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel>
+                                        <TextBlock Text="BACKLIGHT TIMEOUT" Classes="SubHeader" />
+                                        <TextBlock Classes="Hint" Text="Turn the keyboard lighting off after 30 seconds without input." />
+                                    </StackPanel>
+                                    <CheckBox x:Name="BacklightTimeoutCheckBox" Grid.Column="1" Content="Enabled"
+                                              IsChecked="True" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Battery ===== -->
+                <TabItem x:Name="BatteryPanel">
+                    <TabItem.Header>
+                        <StackPanel Classes="NavHeader">
+                            <material:MaterialIcon Kind="BatteryCharging" />
+                            <TextBlock Text="BATTERY" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <ScrollViewer Classes="Page">
+                        <StackPanel>
+                            <TextBlock Text="BATTERY" Classes="SectionHeader" />
+                            <TextBlock Text="Charging behaviour and battery care" Classes="SectionSub" />
+
+                            <Border Classes="Card" x:Name="LimiterControls">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel>
+                                        <Border Classes="CardAccent" Background="{StaticResource PsGood}" />
+                                        <TextBlock Text="HEALTH MODE · 80% LIMIT" Classes="SubHeader"
+                                                   Foreground="{StaticResource PsGood}" />
+                                        <TextBlock Classes="Hint"
+                                                   Text="Stops charging at 80% to slow battery wear. Recommended if the laptop is plugged in most of the time." />
+                                    </StackPanel>
+                                    <CheckBox x:Name="BatteryLimitCheckBox" Grid.Column="1" Content="Enabled"
+                                              VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="Card" x:Name="CalibrationControls">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="CALIBRATION" Classes="SubHeader" />
+                                        <TextBlock x:Name="CalibrationStatusTextBlock" Text="Status: Not calibrating"
+                                                   Classes="Value" FontSize="13" />
+                                        <TextBlock Classes="Hint"
+                                                   Text="Fully charges, drains and recharges the battery so the percentage reading is accurate again." />
+                                        <TextBlock Classes="Warning" Text="Keep AC power connected during calibration." />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="StartCalibrationButton" Content="START"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                                        <Button x:Name="StopCalibrationButton" Content="STOP" IsEnabled="False"
+                                                Classes="Secondary" HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Center" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="Card" x:Name="UsbChargingPanel">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel>
+                                        <TextBlock Text="POWER-OFF USB CHARGING" Classes="SubHeader" />
+                                        <TextBlock Classes="Hint"
+                                                   Text="Keep charging phones and accessories from USB while the laptop is off." />
+                                    </StackPanel>
+                                    <ComboBox x:Name="UsbChargingComboBox" Grid.Column="1" SelectedIndex="2" Width="240"
+                                              VerticalAlignment="Center"
+                                              SelectionChanged="UsbChargingComboBox_OnSelectionChanged">
+                                        <ComboBoxItem Content="Disabled" />
+                                        <ComboBoxItem Content="Until battery reaches 10%" />
+                                        <ComboBoxItem Content="Until battery reaches 20%" />
+                                        <ComboBoxItem Content="Until battery reaches 30%" />
+                                    </ComboBox>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Settings ===== -->
+                <TabItem x:Name="SystemSettingsPanel">
+                    <TabItem.Header>
+                        <StackPanel Classes="NavHeader">
+                            <material:MaterialIcon Kind="CogOutline" />
+                            <TextBlock Text="SETTINGS" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <ScrollViewer Classes="Page">
+                        <StackPanel>
+                            <TextBlock Text="SETTINGS" Classes="SectionHeader" />
+                            <TextBlock Text="Display, boot and device information" Classes="SectionSub" />
+
+                            <Border Classes="Card" x:Name="LcdOverrideControls">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel>
+                                        <TextBlock Text="LCD OVERDRIVE" Classes="SubHeader" />
+                                        <TextBlock Classes="Hint" Text="Reduces panel response time and ghosting in games. Uses slightly more power." />
+                                    </StackPanel>
+                                    <CheckBox x:Name="LcdOverrideCheckBox" Grid.Column="1" Content="Enabled"
+                                              IsChecked="True" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="Card" x:Name="BootSoundControls">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel>
+                                        <TextBlock Text="BOOT ANIMATION &amp; SOUND" Classes="SubHeader" />
+                                        <TextBlock Classes="Hint" Text="Predator logo animation and chime at power-on." />
+                                    </StackPanel>
+                                    <CheckBox x:Name="BootAnimAndSoundCheckBox" Grid.Column="1" Content="Enabled"
+                                              IsChecked="False" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="Card">
+                                <StackPanel>
+                                    <Border Classes="CardAccent" />
+                                    <TextBlock Text="DEVICE" Classes="SubHeader" />
+                                    <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                                          Margin="0 12 0 0" RowSpacing="10">
+                                        <TextBlock Grid.Row="0" Text="MODEL" Classes="Label" />
+                                        <TextBlock x:Name="ModelNameText" Grid.Row="0" Grid.Column="1" Text="UNKNOWN"
+                                                   Classes="Value" FontSize="13" />
+                                        <TextBlock Grid.Row="1" Text="LAPTOP TYPE" Classes="Label" />
+                                        <TextBlock x:Name="LaptopTypeText" Grid.Row="1" Grid.Column="1" Text="UNKNOWN"
+                                                   Classes="Value" FontSize="13" />
+                                        <TextBlock Grid.Row="2" Text="FEATURES" Classes="Label" />
+                                        <TextBlock x:Name="SupportedFeaturesTextBlock" Grid.Row="2" Grid.Column="1"
+                                                   Text="UNKNOWN" Classes="Hint" Foreground="{StaticResource PsText}" />
+                                        <TextBlock Grid.Row="3" Text="DAEMON" Classes="Label" />
+                                        <TextBlock x:Name="DaemonVersionText" Grid.Row="3" Grid.Column="1" Text="UNKNOWN"
+                                                   Classes="Value" FontSize="13" />
+                                        <TextBlock Grid.Row="4" Text="DRIVER" Classes="Label" />
+                                        <TextBlock x:Name="DriverVersionText" Grid.Row="4" Grid.Column="1" Text="UNKNOWN"
+                                                   Classes="Value" FontSize="13" />
+                                        <TextBlock Grid.Row="5" Text="APP" Classes="Label" />
+                                        <TextBlock x:Name="ProjectVersionText" Grid.Row="5" Grid.Column="1"
+                                                   Text="UNKNOWN" Classes="Value" FontSize="13" />
+                                    </Grid>
+
+                                    <TextBlock Classes="Hint" Margin="0 16 0 0"
+                                               Text="PredatorCore is free software under the GNU GPL v3, with no warranty. Based on Div Acer Manager Max by PXDiv; hardware access via the Linuwu-Sense driver. Not affiliated with Acer." />
+
+                                    <WrapPanel Orientation="Horizontal" Margin="0 18 0 0" ItemSpacing="10">
+                                        <Button x:Name="UpdatesButton" Content="CHECK FOR UPDATES"
+                                                Click="UpdatesButton_OnClick" />
+                                        <Button x:Name="IssuePageButton" Content="REPORT ISSUE" Classes="Secondary"
+                                                Click="IssuePageButton_OnClick" />
+                                        <Button x:Name="InternalsManagerButton" Content="INTERNALS" Classes="Secondary"
+                                                Click="InternalsMangerWindow_OnClick" />
+                                        <Button x:Name="DeveloperModeButton" Content="DEVELOPER MODE" Classes="Secondary"
+                                                IsVisible="False" Click="DeveloperMode_OnClick" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <!-- ================= Daemon connection overlay ================= -->
+        <Grid x:Name="DaemonErrorGrid" Panel.ZIndex="100" Background="#CC07090C" IsHitTestVisible="True"
+              IsVisible="True">
+            <Border Background="{StaticResource PsSurface}" BorderBrush="{StaticResource PsAccent}"
+                    BorderThickness="1" CornerRadius="8" Padding="34 30" Width="420"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center" Spacing="14">
+                    <material:MaterialIcon Kind="LanDisconnect" Foreground="{StaticResource PsAccent}" Width="44"
+                                           Height="44" HorizontalAlignment="Center" />
+                    <TextBlock Text="CONNECTING TO DAEMON" Classes="SectionHeader" FontSize="16"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Classes="Hint" TextAlignment="Center"
+                               Text="The control service may still be starting. If this doesn't clear within a minute, check: systemctl status damx-daemon" />
+                    <Button Content="RETRY" HorizontalAlignment="Center" Click="RetryConnectionButton_OnClick" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

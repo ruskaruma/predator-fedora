@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build GUI
+        run: dotnet build src/PredatorCore/PredatorCore.csproj -c Release
+
+      - name: Check daemon compiles
+        run: python3 -m py_compile daemon/*.py

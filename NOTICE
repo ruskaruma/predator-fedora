@@ -1,0 +1,54 @@
+PredatorCore
+Copyright (C) 2026 ruskaruma
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. See LICENSE.
+
+-------------------------------------------------------------------------------
+Origin
+-------------------------------------------------------------------------------
+
+PredatorCore is a modified version of Div Acer Manager Max (DAMX) by PXDiv,
+https://github.com/PXDiv/Div-Acer-Manager-Max, which is licensed under the
+GNU General Public License v3.0. The original authors retain copyright in their
+work. Derived from upstream commit 8b2c736 (September 2026).
+
+-------------------------------------------------------------------------------
+Changes made by ruskaruma (2026-09-29)
+-------------------------------------------------------------------------------
+
+- Renamed the project, namespace and binary to PredatorCore. New name, icon and
+  branding. The upstream mascot artwork was removed.
+- Redesigned the whole GUI in a PredatorSense-inspired style: sidebar
+  navigation, status header, new theme and restyled controls.
+- New Monitoring page with arc gauges and additional metrics: CPU clocks,
+  package power, GPU clock, power, VRAM and power state, fan duty, memory,
+  swap, disk, NVMe temperature, network, battery health, cycles and draw,
+  uptime and load.
+- New components: ArcGauge, KeyboardPreview (live 4-zone preview) and
+  SystemMetricsSampler / MonitoringViewModel.
+- Efficiency: polling is paused while the dashboard is hidden or minimised;
+  the runtime-suspended NVIDIA GPU is not woken; a single nvidia-smi query
+  replaces two; CPU usage no longer sleeps 100 ms per sample.
+- Fixed the battery percentage binding being overwritten at startup.
+- Battery time-left now handles charge_* batteries.
+- Renamed DAMXClient/DAMXSettings to DaemonClient/DaemonSettings. The daemon
+  socket path (/var/run/DAMX.sock), log path and config path are unchanged
+  for compatibility with existing daemon installs.
+- Daemon: added a provenance header and rebranded its CLI description. The
+  daemon's behaviour is unchanged.
+- Removed the upstream release workflows, remote installers, IDE files and docs.
+  Added a local build/install script and a CI build workflow.
+
+-------------------------------------------------------------------------------
+Third-party components
+-------------------------------------------------------------------------------
+
+- Linuwu-Sense kernel driver (runtime dependency, not bundled), GPL-3.0,
+  https://github.com/0x7375646F/Linuwu-Sense
+- Oxanium font, SIL OFL 1.1, src/PredatorCore/Assets/Fonts/OFL-Oxanium.txt
+- Open Sans font, SIL OFL 1.1, src/PredatorCore/Assets/Fonts/OFL-OpenSans.txt
+- Avalonia, LiveCharts2, Material.Icons, MessageBox.Avalonia (NuGet packages,
+  MIT licensed)
