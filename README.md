@@ -15,6 +15,7 @@ Built and tuned on an **Acer Predator Helios Neo 16 (PHN16-71)** running Fedora 
 - **Performance**: Eco, Quiet, Balanced, Performance and Turbo modes.
 - **CPU power limits**: set the sustained (PL1) and burst (PL2) package power. Your limits apply on top of every mode and are re-applied after mode changes, sleep and reboot. The stock limits allow 157 W bursts in *every* mode, which is what sends the i9 to 100 °C on light loads.
 - **Fans**: the firmware's Auto curve, Max (about 7400 RPM on the PHN16-71), fixed custom speeds, or **custom temperature curves** for the CPU and GPU fans. Curves are edited by dragging points, and a 95 °C safety override always applies.
+- **Automation**: when you unplug, switch to Eco and dim the keyboard, then restore your mode and brightness when you plug back in. Steam games (and any processes you list) switch to Turbo, and everything is restored when they close. A heat guard warns you, or steps the mode down, when the CPU stays hot. **Super+F5** cycles modes from anywhere, with a pop-up. There's also an optional tray icon.
 - **Lighting**: per-zone static colours with a live keyboard preview, brightness, hardware effects (breathing, wave, neon, …) and backlight timeout.
 - **Battery**: 80 % health-mode charge limit, calibration, and USB charging while powered off.
 - **Settings**: LCD overdrive and the boot animation and sound.

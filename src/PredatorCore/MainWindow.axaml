@@ -399,6 +399,147 @@
                     </ScrollViewer>
                 </TabItem>
 
+                <!-- ===== Automation ===== -->
+                <TabItem x:Name="AutomationPanel">
+                    <TabItem.Header>
+                        <StackPanel Classes="NavHeader">
+                            <material:MaterialIcon Kind="RobotOutline" />
+                            <TextBlock Text="AUTOMATION" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <ScrollViewer Classes="Page">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Text="AUTOMATION" Classes="SectionHeader" />
+                                    <TextBlock Text="Rules run in the background service, even when this window is closed"
+                                               Classes="SectionSub" />
+                                </StackPanel>
+                                <Button x:Name="SaveAutomationButton" Grid.Column="1" Content="SAVE"
+                                        VerticalAlignment="Center" Click="SaveAutomation_OnClick" />
+                            </Grid>
+
+                            <Border Classes="Card">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <Border Classes="CardAccent" Background="{StaticResource PsWarn}" />
+                                            <TextBlock Text="ON BATTERY" Classes="SubHeader" Foreground="{StaticResource PsWarn}" />
+                                            <TextBlock Classes="Hint" Text="When you unplug, switch to a battery-friendly mode and dim the keyboard." />
+                                        </StackPanel>
+                                        <ToggleSwitch x:Name="AutoBatteryEnabled" Grid.Column="1" OnContent="" OffContent="" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="12"
+                                          IsEnabled="{Binding #AutoBatteryEnabled.IsChecked}">
+                                        <TextBlock Text="MODE" Classes="Label" VerticalAlignment="Center" />
+                                        <ComboBox x:Name="AutoBatteryProfile" Grid.Column="1" Width="220">
+                                            <ComboBoxItem Content="Eco" Tag="low-power" />
+                                            <ComboBoxItem Content="Quiet" Tag="quiet" />
+                                            <ComboBoxItem Content="Balanced" Tag="balanced" />
+                                        </ComboBox>
+                                        <CheckBox x:Name="AutoBatteryDim" Grid.Row="1" Content="Dim keyboard to"
+                                                  VerticalAlignment="Center" />
+                                        <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,60"
+                                              IsEnabled="{Binding #AutoBatteryDim.IsChecked}">
+                                            <Slider x:Name="AutoBatteryBrightness" TickFrequency="5" Value="30" />
+                                            <TextBlock Grid.Column="1" Classes="Value" TextAlignment="Right" VerticalAlignment="Center"
+                                                       Text="{Binding #AutoBatteryBrightness.Value, StringFormat='{}{0:0}%'}" />
+                                        </Grid>
+                                        <CheckBox x:Name="AutoAcRestore" Grid.Row="2" Grid.ColumnSpan="2"
+                                                  Content="When plugged back in, return to the mode I was using on AC" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Card">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <Border Classes="CardAccent" />
+                                            <TextBlock Text="GAMING" Classes="SubHeader" />
+                                            <TextBlock Classes="Hint" Text="Steam games are detected automatically. Everything is restored when the game closes." />
+                                        </StackPanel>
+                                        <ToggleSwitch x:Name="AutoGameEnabled" Grid.Column="1" OnContent="" OffContent="" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12"
+                                          IsEnabled="{Binding #AutoGameEnabled.IsChecked}">
+                                        <TextBlock Text="MODE" Classes="Label" VerticalAlignment="Center" />
+                                        <ComboBox x:Name="AutoGameProfile" Grid.Column="1" Width="220">
+                                            <ComboBoxItem Content="Balanced" Tag="balanced" />
+                                            <ComboBoxItem Content="Performance" Tag="balanced-performance" />
+                                            <ComboBoxItem Content="Turbo" Tag="performance" />
+                                        </ComboBox>
+                                        <TextBlock Grid.Row="1" Text="FANS" Classes="Label" VerticalAlignment="Center" />
+                                        <ComboBox x:Name="AutoGameFans" Grid.Row="1" Grid.Column="1" Width="220">
+                                            <ComboBoxItem Content="Keep current" Tag="keep" />
+                                            <ComboBoxItem Content="Max" Tag="max" />
+                                            <ComboBoxItem Content="My curve" Tag="curve" />
+                                        </ComboBox>
+                                        <TextBlock Grid.Row="2" Text="OTHER GAMES" Classes="Label" VerticalAlignment="Center" />
+                                        <TextBox x:Name="AutoGameProcesses" Grid.Row="2" Grid.Column="1"
+                                                 Watermark="Process names, comma separated (e.g. RocketLeague.exe, minecraft-launcher)" />
+                                        <TextBlock x:Name="AutoGameStatus" Grid.Row="3" Grid.ColumnSpan="2" Classes="Hint"
+                                                   Text="No game running" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Card">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <Border Classes="CardAccent" Background="{StaticResource PsCritical}" />
+                                            <TextBlock Text="HEAT GUARD" Classes="SubHeader" Foreground="{StaticResource PsCritical}" />
+                                            <TextBlock Classes="Hint" Text="Warns you when the CPU stays hot for 30 seconds." />
+                                        </StackPanel>
+                                        <ToggleSwitch x:Name="AutoHeatEnabled" Grid.Column="1" OnContent="" OffContent="" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto" RowSpacing="12"
+                                          IsEnabled="{Binding #AutoHeatEnabled.IsChecked}">
+                                        <TextBlock Text="LIMIT" Classes="Label" VerticalAlignment="Center" />
+                                        <Grid Grid.Column="1" ColumnDefinitions="*,60">
+                                            <Slider x:Name="AutoHeatTemp" Minimum="80" Maximum="100" TickFrequency="1" Value="95" />
+                                            <TextBlock Grid.Column="1" Classes="Value" TextAlignment="Right" VerticalAlignment="Center"
+                                                       Text="{Binding #AutoHeatTemp.Value, StringFormat='{}{0:0}°C'}" />
+                                        </Grid>
+                                        <CheckBox x:Name="AutoHeatStepDown" Grid.Row="1" Grid.ColumnSpan="2"
+                                                  Content="Also step the mode down one level (e.g. Turbo → Performance)" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Card">
+                                <StackPanel Spacing="12">
+                                    <Border Classes="CardAccent" />
+                                    <TextBlock Text="POP-UPS &amp; HOTKEY" Classes="SubHeader" />
+                                    <CheckBox x:Name="AutoNotify" Content="Show a pop-up whenever the mode changes automatically" />
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock x:Name="HotkeyStatusText" Classes="Value" FontSize="13" Text="—" />
+                                            <TextBlock Classes="Hint" Text="Cycles Quiet → Balanced → Performance → Turbo (Eco ↔ Balanced on battery)." />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="TRY IT" Classes="Secondary" Margin="10 0"
+                                                Click="TryHotkey_OnClick" />
+                                        <Button x:Name="SetupHotkeyButton" Grid.Column="2" Content="SET UP SUPER+F5"
+                                                Click="SetupHotkey_OnClick" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="Card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="TRAY ICON" Classes="SubHeader" />
+                                    <TextBlock Classes="Hint"
+                                               Text="Quick mode and fan switching from the top bar. Keeping the app in the tray uses about 240 MB of RAM; rules above work without it." />
+                                    <CheckBox x:Name="TrayEnabledCheckBox" Content="Show tray icon while PredatorCore is open" />
+                                    <CheckBox x:Name="CloseToTrayCheckBox" Content="Keep running in the tray when the window is closed"
+                                              IsEnabled="{Binding #TrayEnabledCheckBox.IsChecked}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
                 <!-- ===== Lighting ===== -->
                 <TabItem x:Name="KeyboardLightingPanel">
                     <TabItem.Header>

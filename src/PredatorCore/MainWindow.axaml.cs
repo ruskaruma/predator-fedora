@@ -120,6 +120,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyLocalBranding();
+        InitTray();
         BindControls();
         AttachEventHandlers();
         InitializeAsync();
@@ -396,10 +397,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (_initialPageShown) return;
         _initialPageShown = true;
-        // `--page performance` (or monitoring/lighting/battery/settings) opens a specific page.
+        // `--page performance` (or monitoring/automation/lighting/battery/settings) opens a specific page.
         var args = Environment.GetCommandLineArgs();
         var pageArg = Array.IndexOf(args, "--page") is var i and >= 0 && i + 1 < args.Length ? args[i + 1] : "";
-        var pageIndex = Array.IndexOf(new[] { "monitoring", "performance", "lighting", "battery", "settings" },
+        var pageIndex = Array.IndexOf(new[] { "monitoring", "performance", "automation", "lighting", "battery", "settings" },
             pageArg.ToLowerInvariant());
         Dispatcher.UIThread.Post(() =>
         {

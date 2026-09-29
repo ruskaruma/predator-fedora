@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Automation** (runs in the background service, even with the app closed):
+  - On battery: switch to Eco and dim the keyboard, keeping any lighting effect running. When plugged back in, restore the previous mode and brightness.
+  - Gaming: Steam games and your own process list switch to a chosen mode and fan setting, and everything is restored when the game exits.
+  - Heat guard: a notification when the CPU stays above the limit for 30 s, with an optional step-down.
+  - Pop-ups when the mode changes.
+- **Super+F5** cycles modes system-wide (`PredatorCore --cycle-mode`).
+- Optional **tray icon** with mode / fan menus and the live CPU temperature.
+
 ## v0.1.0 — first release
 
 PredatorCore is a PredatorSense-style control center for Acer Predator laptops on Linux. It's built and tuned on the Predator Helios Neo 16 (PHN16-71) running Fedora.

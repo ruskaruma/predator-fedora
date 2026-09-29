@@ -80,6 +80,20 @@ Changes made by ruskaruma (2026-09-30)
   with lit edges, glossy buttons.
 
 -------------------------------------------------------------------------------
+Changes made by ruskaruma (2026-09-30, automation)
+-------------------------------------------------------------------------------
+
+- Daemon: new automation.py replaces PowerSourceDetector. It handles the
+  battery / AC rules (mode, keyboard dimming that keeps effects running,
+  restoring the last AC mode), Steam and custom game detection with full
+  restore on exit, a heat guard with optional step-down, desktop
+  notifications delivered into the user's session, and
+  get/set_automation and cycle_thermal_profile commands.
+- GUI: Automation page, optional tray icon (mode / fan menu, live CPU
+  temperature tooltip, close-to-tray), `--cycle-mode` headless command and
+  GNOME shortcut setup (Super+F5).
+
+-------------------------------------------------------------------------------
 Third-party components
 -------------------------------------------------------------------------------
 

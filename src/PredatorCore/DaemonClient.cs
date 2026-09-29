@@ -259,6 +259,26 @@ public class DaemonClient : IDisposable
         return _socket.Available > 0;
     }
 
+    public async Task<(bool ok, string? error)> SetAutomationAsync(Dictionary<string, object> changes)
+    {
+        if (!IsFeatureAvailable("automation")) return (false, "Automation is not available");
+        var response = await SendCommandAsync("set_automation",
+            new Dictionary<string, object> { { "settings", changes } });
+        var root = response.RootElement;
+        var ok = root.GetProperty("success").GetBoolean();
+        var error = root.TryGetProperty("error", out var e) && e.ValueKind == JsonValueKind.String ? e.GetString() : null;
+        return (ok, error);
+    }
+
+    public async Task<string?> CycleThermalProfileAsync()
+    {
+        var response = await SendCommandAsync("cycle_thermal_profile");
+        var root = response.RootElement;
+        return root.GetProperty("success").GetBoolean()
+            ? root.GetProperty("data").GetProperty("profile").GetString()
+            : null;
+    }
+
     public async Task<bool> SetGpuPowerAsync(string mode)
     {
         if (!IsFeatureAvailable("gpu_power")) return false;
@@ -652,6 +672,8 @@ public class DaemonSettings
 
     [JsonPropertyName("gpu_power")] public GpuPowerSettings? GpuPower { get; set; }
 
+    [JsonPropertyName("automation")] public AutomationSettings? Automation { get; set; }
+
     [JsonPropertyName("modprobe_parameter")]
     public string ModprobeParameter { get; set; } = "";
 }
@@ -702,4 +724,23 @@ public class GpuPowerSettings
     [JsonPropertyName("mode")] public string Mode { get; set; } = "auto";
     [JsonPropertyName("state")] public string State { get; set; } = "unknown";
     [JsonPropertyName("asleep_percent")] public int AsleepPercent { get; set; }
+}
+
+public class AutomationSettings
+{
+    [JsonPropertyName("battery_enabled")] public bool BatteryEnabled { get; set; }
+    [JsonPropertyName("battery_profile")] public string BatteryProfile { get; set; } = "low-power";
+    [JsonPropertyName("battery_dim_keyboard")] public bool BatteryDimKeyboard { get; set; }
+    [JsonPropertyName("battery_keyboard_brightness")] public int BatteryKeyboardBrightness { get; set; } = 30;
+    [JsonPropertyName("ac_restore_profile")] public bool AcRestoreProfile { get; set; }
+    [JsonPropertyName("game_enabled")] public bool GameEnabled { get; set; }
+    [JsonPropertyName("game_profile")] public string GameProfile { get; set; } = "performance";
+    [JsonPropertyName("game_fans")] public string GameFans { get; set; } = "keep";
+    [JsonPropertyName("game_processes")] public string GameProcesses { get; set; } = "";
+    [JsonPropertyName("heat_guard_enabled")] public bool HeatGuardEnabled { get; set; }
+    [JsonPropertyName("heat_guard_temp")] public int HeatGuardTemp { get; set; } = 95;
+    [JsonPropertyName("heat_guard_step_down")] public bool HeatGuardStepDown { get; set; }
+    [JsonPropertyName("notify_mode_changes")] public bool NotifyModeChanges { get; set; }
+    [JsonPropertyName("on_ac")] public bool? OnAc { get; set; }
+    [JsonPropertyName("active_game")] public string ActiveGame { get; set; } = "";
 }
