@@ -37,8 +37,7 @@ if [ -f /usr/local/bin/nitro-key-detection.sh ]; then
     echo "==> Pointing the PredatorSense key at PredatorCore"
     printf '#!/bin/bash\nexec %s "$@"\n' "$PREFIX/PredatorCore" | $SUDO tee /usr/local/bin/DAMX >/dev/null
     $SUDO chmod +x /usr/local/bin/DAMX
-    $SUDO sed -i "s#pgrep -f \"/opt/damx/gui/DivAcerManagerMax\"#pgrep -f \"$PREFIX/PredatorCore\"#" \
-        /usr/local/bin/nitro-key-detection.sh
+    $SUDO install -m 755 "$HERE/predatorsense-key.sh" /usr/local/bin/nitro-key-detection.sh
     $SUDO systemctl restart nitro-key-detection.service 2>/dev/null || true
 fi
 

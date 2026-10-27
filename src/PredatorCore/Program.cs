@@ -13,6 +13,10 @@ internal class Program
         // Headless command for keyboard shortcuts: switch to the next mode and exit without opening a window.
         if (args.Length > 0 && args[0] == "--cycle-mode") return CycleMode();
 
+        // Already running: bring that window forward instead of opening a second one.
+        if (SingleInstance.HandOffToRunningCopy()) return 0;
+        SingleInstance.Listen();
+
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

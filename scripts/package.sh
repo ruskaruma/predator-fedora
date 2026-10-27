@@ -24,7 +24,8 @@ cp "$REPO_DIR/src/PredatorCore/icon.png" "$STAGE/icon.png"
 cp "$REPO_DIR/LICENSE" "$REPO_DIR/NOTICE" "$REPO_DIR/README.md" "$STAGE/"
 cp "$REPO_DIR/scripts/install-daemon.sh" "$STAGE/install-daemon.sh"
 cp "$REPO_DIR/scripts/package-install.sh" "$STAGE/install.sh"
-chmod +x "$STAGE/install.sh" "$STAGE/install-daemon.sh" "$STAGE/bin/PredatorCore"
+cp "$REPO_DIR/scripts/predatorsense-key.sh" "$STAGE/predatorsense-key.sh"
+chmod +x "$STAGE/install.sh" "$STAGE/install-daemon.sh" "$STAGE/bin/PredatorCore" "$STAGE/predatorsense-key.sh"
 
 # install-daemon.sh expects the repo layout (../daemon); inside the package the daemon sits next to it
 sed -i 's|REPO_DIR="$(cd "$(dirname "${BASH_SOURCE\[0\]}")/.." \&\& pwd)"|REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" \&\& pwd)"|' \

@@ -120,6 +120,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyLocalBranding();
+        SingleInstance.ShowRequested = ShowFromTray;
         InitTray();
         BindControls();
         AttachEventHandlers();

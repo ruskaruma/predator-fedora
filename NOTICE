@@ -97,6 +97,13 @@ Changes made by ruskaruma (2026-09-30, automation)
   mode selectors. New fan mark, a drawn wordmark, three paper-cut
   illustrations and a new app icon, drawn in code (assets/brand/).
   assets/make_icon.py and the Oxanium and Open Sans fonts were removed.
+- GUI: one copy per user. Launching again (the PredatorSense key, the app
+  menu) brings the running window forward, from the tray too, instead of
+  doing nothing.
+- PredatorSense key: scripts/predatorsense-key.sh replaces DAMX's
+  nitro-key-detection.sh. It starts the app inside the user's own systemd
+  session at each press, so it always has the session's current display
+  and Xwayland cookie.
 
 -------------------------------------------------------------------------------
 Third-party components

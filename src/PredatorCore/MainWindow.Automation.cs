@@ -205,11 +205,15 @@ public partial class MainWindow
         return item;
     }
 
+    /// <summary>Show, restore and raise the window: from the tray, or when the app is launched again.</summary>
     private void ShowFromTray()
     {
         Show();
         if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
         Activate();
+        // The window manager may not raise a window that asks for focus on its own; a moment on top does.
+        Topmost = true;
+        Topmost = false;
     }
 
     /// <summary>Tooltip from sysfs only (no daemon call, no GPU access), so it costs next to nothing.</summary>

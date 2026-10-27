@@ -10,6 +10,7 @@
 - **Super+F5** cycles modes system-wide (`PredatorCore --cycle-mode`).
 - Optional **tray icon** with mode / fan menus and the live CPU temperature.
 - **New look**: a black page, Titillium Web, hairline sections and one coolant accent, with paper-cut illustrations, a new fan mark and a new app icon.
+- **The PredatorSense key always opens the app.** It used to do nothing when the app was hidden in the tray, and stopped working whenever you logged in after the key service had started. A second launch now brings the running window forward, and the key starts the app inside your desktop session.
 
 ## v0.1.0 — first release
 

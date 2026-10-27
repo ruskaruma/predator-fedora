@@ -45,8 +45,7 @@ if [ -f /usr/local/bin/nitro-key-detection.sh ]; then
 exec $PREFIX/PredatorCore "\$@"
 EOF
     sudo chmod +x /usr/local/bin/DAMX
-    sudo sed -i "s#pgrep -f \"/opt/damx/gui/DivAcerManagerMax\"#pgrep -f \"$PREFIX/PredatorCore\"#" \
-        /usr/local/bin/nitro-key-detection.sh
+    sudo install -m 755 "$REPO_DIR/scripts/predatorsense-key.sh" /usr/local/bin/nitro-key-detection.sh
     sudo systemctl restart nitro-key-detection.service 2>/dev/null || true
 fi
 
