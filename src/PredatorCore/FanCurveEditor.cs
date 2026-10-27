@@ -17,7 +17,7 @@ namespace PredatorCore;
 public class FanCurveEditor : Control
 {
     public static readonly StyledProperty<Color> AccentProperty =
-        AvaloniaProperty.Register<FanCurveEditor, Color>(nameof(Accent), Color.Parse("#00E0FF"));
+        AvaloniaProperty.Register<FanCurveEditor, Color>(nameof(Accent), Color.Parse("#4FC3DC"));
 
     public static readonly StyledProperty<double> CurrentTempProperty =
         AvaloniaProperty.Register<FanCurveEditor, double>(nameof(CurrentTemp), double.NaN);
@@ -27,11 +27,11 @@ public class FanCurveEditor : Control
     private const double HitRadius = 12;
 
     private static readonly Typeface LabelFace =
-        new(new FontFamily("avares://PredatorCore/Assets/Fonts/Oxanium.ttf#Oxanium"));
-    private static readonly IBrush LabelBrush = new SolidColorBrush(Color.Parse("#7A8694"));
-    private static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.Parse("#1C2229")), 1);
+        new(new FontFamily("avares://PredatorCore/Assets/Fonts/TitilliumWeb-Regular.ttf#Titillium Web"));
+    private static readonly IBrush LabelBrush = new SolidColorBrush(Color.Parse("#8FFFFFFF"));
+    private static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.Parse("#1FFFFFFF")), 1);
     private static readonly IPen DangerPen =
-        new Pen(new SolidColorBrush(Color.Parse("#FF3B4E"), 0.6), 1, new DashStyle(new double[] { 4, 4 }, 0));
+        new Pen(new SolidColorBrush(Color.Parse("#FF6A4D"), 0.7), 1, new DashStyle(new double[] { 4, 4 }, 0));
 
     private List<int[]> _points = new() { new[] { 50, 0 }, new[] { 90, 100 } };
     private int _dragIndex = -1;
@@ -90,7 +90,7 @@ public class FanCurveEditor : Control
     public override void Render(DrawingContext ctx)
     {
         var r = Plot;
-        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0A0D11"), 0.55), new Rect(Bounds.Size), 8);
+        ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Colors.White, 0.14), 1), new Rect(Bounds.Size).Deflate(0.5));
 
         for (var pct = 0; pct <= 100; pct += 25)
         {
@@ -108,7 +108,7 @@ public class FanCurveEditor : Control
 
         // Safety zone: everything past the safety temperature runs at 100%.
         var sx = ToScreen(SafetyTemp, 0).X;
-        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#FF3B4E"), 0.07), new Rect(sx, r.Y, r.Right - sx, r.Height));
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#FF6A4D"), 0.07), new Rect(sx, r.Y, r.Right - sx, r.Height));
         ctx.DrawLine(DangerPen, new Point(sx, r.Y), new Point(sx, r.Bottom));
 
         var accent = Accent;
@@ -141,9 +141,8 @@ public class FanCurveEditor : Control
         {
             var c = ToScreen(_points[i][0], _points[i][1]);
             var active = i == _dragIndex;
-            ctx.DrawEllipse(new SolidColorBrush(accent, active ? 0.35 : 0.18), null, c, 11, 11);
-            ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#07090C")), new Pen(new SolidColorBrush(accent), 2), c, 5.5,
-                5.5);
+            if (active) ctx.DrawEllipse(new SolidColorBrush(accent, 0.3), null, c, 11, 11);
+            ctx.DrawEllipse(new SolidColorBrush(Colors.Black), new Pen(new SolidColorBrush(accent), 2), c, 5.5, 5.5);
             if (active)
                 DrawLabel(ctx, $"{_points[i][0]}°C → {_points[i][1]}%", new Point(c.X + 12, c.Y - 22), accent);
         }
@@ -153,7 +152,7 @@ public class FanCurveEditor : Control
             var x = ToScreen(CurrentTemp, 0).X;
             ctx.DrawLine(new Pen(new SolidColorBrush(Colors.White, 0.55), 1, new DashStyle(new double[] { 2, 3 }, 0)),
                 new Point(x, r.Y), new Point(x, r.Bottom));
-            DrawLabel(ctx, $"NOW {CurrentTemp:0}°", new Point(x + 4, r.Y), Colors.White);
+            DrawLabel(ctx, $"Now {CurrentTemp:0}°", new Point(x + 4, r.Y), Colors.White);
         }
     }
 

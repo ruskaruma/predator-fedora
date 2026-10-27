@@ -125,9 +125,9 @@ public partial class MainWindow
 
         _updatingPowerSliders = false;
 
-        var source = limits.Enabled ? "CUSTOM" : "STOCK";
+        var source = limits.Enabled ? "Your limits" : "Stock limits";
         SetText(this.FindControl<TextBlock>("PowerLimitsStatusText"),
-            $"{source} · NOW {limits.EffectivePl1?.ToString() ?? "?"} / {limits.EffectivePl2?.ToString() ?? "?"} W");
+            $"{source}, now {limits.EffectivePl1?.ToString() ?? "?"} / {limits.EffectivePl2?.ToString() ?? "?"} W");
     }
 
     private void ShowFanCurveLive(FanCurveSettings status)
@@ -138,12 +138,12 @@ public partial class MainWindow
             gpu.CurrentTemp = status.GpuTemp ?? status.CpuTemp ?? double.NaN;
 
         string Describe(double? temp, int pct) =>
-            temp is null ? "—" : $"{temp:0}°C → {(pct == 0 ? "AUTO" : pct + "%")}";
+            temp is null ? "—" : $"{temp:0}°C → {(pct == 0 ? "auto" : pct + "%")}";
 
         SetText(this.FindControl<TextBlock>("CpuCurveLiveText"), Describe(status.CpuTemp, status.CpuPercent));
         SetText(this.FindControl<TextBlock>("GpuCurveLiveText"),
             status.GpuTemp is null && status.CpuTemp is not null
-                ? $"GPU ASLEEP · FOLLOWS CPU → {(status.GpuPercent == 0 ? "AUTO" : status.GpuPercent + "%")}"
+                ? $"GPU asleep, following the CPU → {(status.GpuPercent == 0 ? "auto" : status.GpuPercent + "%")}"
                 : Describe(status.GpuTemp, status.GpuPercent));
     }
 

@@ -15,11 +15,12 @@ public class FanDial : Control
         AvaloniaProperty.Register<FanDial, double>(nameof(Percent));
 
     public static readonly StyledProperty<Color> AccentProperty =
-        AvaloniaProperty.Register<FanDial, Color>(nameof(Accent), Color.Parse("#00E0FF"));
+        AvaloniaProperty.Register<FanDial, Color>(nameof(Accent), Color.Parse("#4FC3DC"));
 
     private const int Blades = 7;
-    private static readonly Color Track = Color.Parse("#1C2229");
-    private static readonly Color Hub = Color.Parse("#0A0D11");
+    private static readonly Color Track = Color.Parse("#2EFFFFFF");
+    private static readonly Color Hub = Color.Parse("#000000");
+    private static readonly Color Paper = Color.Parse("#EBE5C8");
 
     static FanDial()
     {
@@ -48,7 +49,7 @@ public class FanDial : Control
         var accent = Accent;
 
         // duty ring: full track, then the filled arc from the top, clockwise
-        ctx.DrawEllipse(null, new Pen(new SolidColorBrush(Track), 5), c, ringR, ringR);
+        ctx.DrawEllipse(null, new Pen(new SolidColorBrush(Track), 4), c, ringR, ringR);
         if (fraction > 0.005)
         {
             var arc = new StreamGeometry();
@@ -69,17 +70,15 @@ public class FanDial : Control
                 g.EndFigure(false);
             }
 
-            ctx.DrawGeometry(null, new Pen(new SolidColorBrush(accent, 0.22), 11, lineCap: PenLineCap.Round), arc);
-            ctx.DrawGeometry(null, new Pen(new SolidColorBrush(accent), 5, lineCap: PenLineCap.Round), arc);
+            ctx.DrawGeometry(null, new Pen(new SolidColorBrush(accent), 4), arc);
         }
 
         // shroud
         var shroudR = ringR - 9;
-        ctx.DrawEllipse(new SolidColorBrush(Hub), new Pen(new SolidColorBrush(Track), 1.5), c, shroudR, shroudR);
+        ctx.DrawEllipse(new SolidColorBrush(Hub), new Pen(new SolidColorBrush(Track), 1), c, shroudR, shroudR);
 
-        // swept blades: brighter as the fan works harder
-        var bladeBrush = new SolidColorBrush(accent, 0.35 + 0.55 * fraction);
-        var bladeEdge = new Pen(new SolidColorBrush(accent, 0.9), 1);
+        // swept paper blades: more opaque as the fan works harder
+        var bladeBrush = new SolidColorBrush(Paper, 0.35 + 0.6 * fraction);
         var hubR = shroudR * 0.26;
         var tipR = shroudR * 0.92;
         for (var i = 0; i < Blades; i++)
@@ -95,12 +94,11 @@ public class FanDial : Control
                 g.EndFigure(true);
             }
 
-            ctx.DrawGeometry(bladeBrush, bladeEdge, blade);
+            ctx.DrawGeometry(bladeBrush, null, blade);
         }
 
         // hub cap
-        ctx.DrawEllipse(new SolidColorBrush(Hub), new Pen(new SolidColorBrush(accent), 2), c, hubR, hubR);
-        ctx.DrawEllipse(new SolidColorBrush(accent, 0.8), null, c, hubR * 0.35, hubR * 0.35);
+        ctx.DrawEllipse(new SolidColorBrush(accent), null, c, hubR, hubR);
     }
 
     private static Point OnCircle(Point c, double r, double degrees)

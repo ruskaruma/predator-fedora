@@ -6,7 +6,7 @@ using Avalonia.Media;
 namespace PredatorCore;
 
 /// <summary>
-///     PredatorSense-style 270° arc gauge. Draws only the track and value arc;
+///     270° arc gauge in flat print inks. Draws only the track and value arc;
 ///     the numeric readout is layered on top in XAML so it inherits text styles.
 ///     The arc colour shifts from accent to warning to critical as it fills.
 /// </summary>
@@ -28,11 +28,11 @@ public class ArcGauge : Control
         AvaloniaProperty.Register<ArcGauge, double>(nameof(Thickness), 10);
 
     public static readonly StyledProperty<Color> AccentProperty =
-        AvaloniaProperty.Register<ArcGauge, Color>(nameof(Accent), Color.Parse("#00E0FF"));
+        AvaloniaProperty.Register<ArcGauge, Color>(nameof(Accent), Color.Parse("#4FC3DC"));
 
-    private static readonly Color Track = Color.Parse("#1C2229");
-    private static readonly Color Warn = Color.Parse("#FFB020");
-    private static readonly Color Critical = Color.Parse("#FF3B4E");
+    private static readonly Color Track = Color.Parse("#2EFFFFFF");
+    private static readonly Color Warn = Color.Parse("#E3A52A");
+    private static readonly Color Critical = Color.Parse("#FF6A4D");
 
     private const double StartAngle = 135;
     private const double SweepAngle = 270;
@@ -88,19 +88,14 @@ public class ArcGauge : Control
         var radius = (size - Thickness) / 2;
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
 
-        DrawArc(context, center, radius, SweepAngle, new Pen(new SolidColorBrush(Track), Thickness,
-            lineCap: PenLineCap.Round));
+        DrawArc(context, center, radius, SweepAngle, new Pen(new SolidColorBrush(Track), Thickness));
 
         var fraction = Maximum > 0 ? Math.Clamp(Value / Maximum, 0, 1) : 0;
         if (fraction <= 0.002) return;
 
         var color = fraction >= CriticalAt ? Critical : fraction >= WarnAt ? Warn : Accent;
 
-        // Soft glow underneath, then the crisp value arc.
-        DrawArc(context, center, radius, SweepAngle * fraction,
-            new Pen(new SolidColorBrush(color, 0.18), Thickness * 2.2, lineCap: PenLineCap.Round));
-        DrawArc(context, center, radius, SweepAngle * fraction,
-            new Pen(new SolidColorBrush(color), Thickness, lineCap: PenLineCap.Round));
+        DrawArc(context, center, radius, SweepAngle * fraction, new Pen(new SolidColorBrush(color), Thickness));
     }
 
     private static void DrawArc(DrawingContext context, Point center, double radius, double sweep, IPen pen)

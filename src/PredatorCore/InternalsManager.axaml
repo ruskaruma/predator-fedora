@@ -3,25 +3,16 @@
         x:Class="PredatorCore.InternalsManager"
         Width="600" Height="700"
         Title="PredatorCore Internals"
-        Icon="iconTransparent.png"
+        Icon="icon.png"
         WindowStartupLocation="CenterOwner"
-        Background="#0e0e11">
+        Background="#000000">
 
     <Grid>
         <Grid RowDefinitions="Auto,*">
 
             <!-- Header -->
-            <Border Grid.Row="0" Padding="0 10 0 10">
-                <TextBlock Text="Internals Manager" FontSize="22" FontWeight="Bold"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           FontFamily="{StaticResource OxaniumBoldFont}">
-                    <TextBlock.Foreground>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%, 100%">
-                            <GradientStop Offset="0" Color="#72bff4" />
-                            <GradientStop Offset="1" Color="#3678c3" />
-                        </LinearGradientBrush>
-                    </TextBlock.Foreground>
-                </TextBlock>
+            <Border Grid.Row="0" Padding="24 22 24 18">
+                <TextBlock Text="Internals" Classes="SectionHeader" FontSize="28" />
             </Border>
 
             <!-- Main Content -->

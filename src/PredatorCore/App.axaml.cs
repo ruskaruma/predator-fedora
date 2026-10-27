@@ -13,7 +13,7 @@ public class App : Application
     {
         AvaloniaXamlLoader.Load(this);
 
-        var accentColor = Color.Parse("#00E0FF");
+        var accentColor = Color.Parse("#4FC3DC");
         Application.Current.Resources["SystemAccentColor"] = accentColor;
         Application.Current.Resources["SystemAccentBrush"] = new SolidColorBrush(accentColor);
 

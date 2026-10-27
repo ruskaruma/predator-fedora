@@ -82,7 +82,9 @@ Power limits and fan curves need the PredatorCore daemon. The installer below ru
 sudo ./scripts/install-daemon.sh
 ```
 
-To use your own artwork on your machine only, put `icon.png`, `iconTransparent.png` and/or a `hicolor/` tree in `~/.local/share/predatorcore/icons/`. `python3 assets/make_icon.py <dir> --emblem logo.png` renders any logo with the same glass finish.
+To use your own artwork on your machine only, put `icon.png`, `iconTransparent.png` and/or a `hicolor/` tree in `~/.local/share/predatorcore/icons/`.
+
+The artwork (the fan mark, the three paper-cut illustrations and the app icon) is drawn in code. Its sources are in [`assets/brand/`](assets/brand), and `assets/brand/render.sh` redraws all of it.
 
 For development:
 
@@ -96,7 +98,7 @@ PredatorCore is a derivative of **[Div Acer Manager Max (DAMX)](https://github.c
 
 Hardware access is provided by **[Linuwu-Sense](https://github.com/0x7375646F/Linuwu-Sense)** (GPL-3.0), a reverse-engineered PredatorSense driver.
 
-Fonts: [Oxanium](https://github.com/sevmeyer/oxanium) and [Open Sans](https://github.com/googlefonts/opensans), both under the SIL Open Font License 1.1.
+Font: [Titillium Web](https://github.com/google/fonts/tree/main/ofl/titilliumweb), under the SIL Open Font License 1.1.
 
 PredatorCore is not affiliated with or endorsed by Acer. "Predator" and "PredatorSense" are trademarks of Acer Inc.
 

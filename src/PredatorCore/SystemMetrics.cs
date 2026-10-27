@@ -177,7 +177,7 @@ public sealed class SystemMetricsSampler
         var governor = ReadText("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
         var epp = ReadText("/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference");
         if (governor != null)
-            s.CpuPowerPolicy = epp != null ? $"{governor} · {epp.Replace('_', ' ')}" : governor;
+            s.CpuPowerPolicy = epp != null ? $"{governor}, {epp.Replace('_', ' ')}" : governor;
     }
 
     private void SampleGpu(MetricsSample s)
@@ -328,7 +328,7 @@ public sealed class SystemMetricsSampler
             s.Uptime = TimeSpan.FromSeconds(secs);
 
         var load = ReadText("/proc/loadavg")?.Split(' ');
-        if (load is { Length: >= 3 }) s.LoadAvg = $"{load[0]} · {load[1]} · {load[2]}";
+        if (load is { Length: >= 3 }) s.LoadAvg = $"{load[0]}, {load[1]}, {load[2]}";
     }
 
     private static string? FindHwmonFile(string hwmonName, string file)
@@ -455,13 +455,13 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
 
         if (!s.GpuPresent) GpuState = "Not detected";
         else if (s.GpuAsleep) GpuState = "Sleeping (saving power)";
-        else GpuState = $"Active · {s.GpuPState}";
+        else GpuState = $"Active, {s.GpuPState}";
         // A runtime-suspended dGPU is powered off: its clock, load and power really are zero, so show
         // that instead of "—" (and still never wake it to find out).
-        GpuTempText = s.GpuAsleep ? "SLEEP" : s.GpuTemp is { } gt ? $"{gt:0}°" : "—";
+        GpuTempText = s.GpuAsleep ? "Asleep" : s.GpuTemp is { } gt ? $"{gt:0}°" : "—";
         GpuLoadText = s.GpuAsleep ? "0%" : s.GpuUsage is { } gu ? $"{gu:0}%" : "—";
-        GpuClock = s.GpuAsleep ? "0 MHz · asleep" : s.GpuClockMhz is { } gc ? $"{gc:0} MHz" : "—";
-        GpuPower = s.GpuAsleep ? "0 W · asleep" : s.GpuWatts is { } gw ? $"{gw:0.0} W" : "—";
+        GpuClock = s.GpuAsleep ? "0 MHz, asleep" : s.GpuClockMhz is { } gc ? $"{gc:0} MHz" : "—";
+        GpuPower = s.GpuAsleep ? "0 W, asleep" : s.GpuWatts is { } gw ? $"{gw:0.0} W" : "—";
         if (s.GpuMemUsedMb is { } used && s.GpuMemTotalMb is > 0)
         {
             GpuVram = $"{used / 1024:0.0} / {s.GpuMemTotalMb.Value / 1024:0} GB";
@@ -469,7 +469,7 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
         }
         else
         {
-            GpuVram = s.GpuAsleep ? "0 GB · powered off" : "—";
+            GpuVram = s.GpuAsleep ? "0 GB, powered off" : "—";
             GpuVramPercent = 0;
         }
 
@@ -497,7 +497,7 @@ public sealed class MonitoringViewModel : INotifyPropertyChanged
         LoadAvg = s.LoadAvg;
 
         IsThrottling = s.ThrottledPercent >= 1;
-        ThrottleText = $"THERMAL THROTTLING · {s.ThrottledPercent:0}% OF THE TIME";
+        ThrottleText = $"Thermal throttling {s.ThrottledPercent:0}% of the time";
         ThrottleSummary = s.ThrottleEventsTotal > 0 ? $"{s.ThrottleEventsTotal:N0} throttle events since boot" : "No throttling since boot";
 
         CpuFanPercent = Math.Min(100, 100 * cpuFanRpm / FanMaxRpm);

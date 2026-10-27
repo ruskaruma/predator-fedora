@@ -92,6 +92,11 @@ Changes made by ruskaruma (2026-09-30, automation)
 - GUI: Automation page, optional tray icon (mode / fan menu, live CPU
   temperature tooltip, close-to-tray), `--cycle-mode` headless command and
   GNOME shortcut setup (Super+F5).
+- GUI: new look in a flat print style: a black page, Titillium Web,
+  hairline sections and one accent (coolant teal), with plate buttons and
+  mode selectors. New fan mark, a drawn wordmark, three paper-cut
+  illustrations and a new app icon, drawn in code (assets/brand/).
+  assets/make_icon.py and the Oxanium and Open Sans fonts were removed.
 
 -------------------------------------------------------------------------------
 Third-party components
@@ -99,7 +104,6 @@ Third-party components
 
 - Linuwu-Sense kernel driver (runtime dependency, not bundled), GPL-3.0,
   https://github.com/0x7375646F/Linuwu-Sense
-- Oxanium font, SIL OFL 1.1, src/PredatorCore/Assets/Fonts/OFL-Oxanium.txt
-- Open Sans font, SIL OFL 1.1, src/PredatorCore/Assets/Fonts/OFL-OpenSans.txt
+- Titillium Web font, SIL OFL 1.1, src/PredatorCore/Assets/Fonts/OFL-TitilliumWeb.txt
 - Avalonia, LiveCharts2, Material.Icons, MessageBox.Avalonia (NuGet packages,
   MIT licensed)

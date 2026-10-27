@@ -113,7 +113,7 @@ public partial class MainWindow
         SetText(this.FindControl<TextBlock>("HotkeyStatusText"),
             binding == null ? "No mode-switch shortcut set up yet" : $"Press {GnomeShortcut.Pretty(binding)} to switch modes");
         if (this.FindControl<Button>("SetupHotkeyButton") is { } button)
-            button.Content = binding == null ? "SET UP SUPER+F5" : "RESET TO SUPER+F5";
+            button.Content = binding == null ? "Set up Super+F5" : "Reset to Super+F5";
     }
 
     // ---------- tray ----------
@@ -223,8 +223,8 @@ public partial class MainWindow
                 .Where(d => ReadFile($"{d}/name") == "coretemp")
                 .Select(d => ReadFile($"{d}/temp1_input")).FirstOrDefault()
             : null;
-        var cpu = int.TryParse(temp, out var milli) ? $"CPU {milli / 1000}°C · " : "";
-        _tray.ToolTipText = $"PredatorCore · {cpu}{name}";
+        var cpu = int.TryParse(temp, out var milli) ? $"CPU {milli / 1000}°C, " : "";
+        _tray.ToolTipText = $"PredatorCore: {cpu}{name}";
     }
 
     private static WindowIcon LoadTrayIcon()

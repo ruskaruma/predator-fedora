@@ -365,8 +365,8 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                 _gpuLatest.Clear();
                 if (gpu.HasValue) _gpuLatest.Add(new LiveChartsCore.Defaults.ObservablePoint(0, gpu));
                 LatestReadingText = metricsData.GpuTemp > 0
-                    ? $"NOW {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}° · GPU {metricsData.GpuTemp:0}°"
-                    : $"NOW {now:HH:mm:ss} · CPU {metricsData.CpuTemp:0}° · GPU ASLEEP";
+                    ? $"CPU {metricsData.CpuTemp:0}°, GPU {metricsData.GpuTemp:0}° at {now:HH:mm:ss}"
+                    : $"CPU {metricsData.CpuTemp:0}°, GPU asleep at {now:HH:mm:ss}";
             });
         }
         catch (Exception ex)
@@ -777,15 +777,15 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
         _gpuTempHistory.Clear();
 
         // Initialize series
-        // PredatorSense palette: CPU cyan, GPU orange. Points hidden to keep redraws cheap.
+        // Print inks: CPU in coolant, GPU in cream paper. Points hidden to keep redraws cheap.
         _tempSeries = new ObservableCollection<ISeries>
         {
             new LineSeries<LiveChartsCore.Defaults.ObservablePoint>
             {
                 Values = _cpuTempHistory,
                 Name = "CPU",
-                Stroke = new SolidColorPaint(new SKColor(0x00, 0xE0, 0xFF)) { StrokeThickness = 2.5f },
-                Fill = new SolidColorPaint(new SKColor(0x00, 0xE0, 0xFF, 0x22)),
+                Stroke = new SolidColorPaint(new SKColor(0x4F, 0xC3, 0xDC)) { StrokeThickness = 2f },
+                Fill = null,
                 GeometrySize = 0,
                 LineSmoothness = 0.6,
                 XToolTipLabelFormatter = chartPoint => $"CPU: {chartPoint.Label}°C"
@@ -794,14 +794,14 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
             {
                 Values = _gpuTempHistory,
                 Name = "GPU",
-                Stroke = new SolidColorPaint(new SKColor(0xFF, 0x8A, 0x00)) { StrokeThickness = 2.5f },
-                Fill = new SolidColorPaint(new SKColor(0xFF, 0x8A, 0x00, 0x18)),
+                Stroke = new SolidColorPaint(new SKColor(0xEB, 0xE5, 0xC8)) { StrokeThickness = 2f },
+                Fill = null,
                 GeometrySize = 0,
                 LineSmoothness = 0.6,
                 XToolTipLabelFormatter = chartPoint => $"GPU: {chartPoint.Label}°C"
             },
-            LatestMarker(_cpuLatest, new SKColor(0x00, 0xE0, 0xFF)),
-            LatestMarker(_gpuLatest, new SKColor(0xFF, 0x8A, 0x00))
+            LatestMarker(_cpuLatest, new SKColor(0x4F, 0xC3, 0xDC)),
+            LatestMarker(_gpuLatest, new SKColor(0xEB, 0xE5, 0xC8))
         };
 
         // Initialize and configure the chart
@@ -822,12 +822,12 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                     ForceStepToMin = true,
                     MinStep = 30,
                     TextSize = 11,
-                    LabelsPaint = new SolidColorPaint(new SKColor(0x7A, 0x86, 0x94)),
-                    SeparatorsPaint = new SolidColorPaint(new SKColor(0x1C, 0x22, 0x29)) { StrokeThickness = 1 },
+                    LabelsPaint = new SolidColorPaint(new SKColor(0xFF, 0xFF, 0xFF, 0x8F)),
+                    SeparatorsPaint = new SolidColorPaint(new SKColor(0xFF, 0xFF, 0xFF, 0x1F)) { StrokeThickness = 1 },
                     Labeler = v =>
                     {
                         var seconds = (int)Math.Round(-v);
-                        if (seconds <= 0) return "NOW";
+                        if (seconds <= 0) return "now";
                         return seconds % 60 == 0 ? $"-{seconds / 60}m" : seconds > 60 ? $"-{seconds / 60}m{seconds % 60}" : $"-{seconds}s";
                     }
                 }
@@ -838,8 +838,8 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
                 {
                     MinLimit = 20,
                     MaxLimit = 105,
-                    LabelsPaint = new SolidColorPaint(new SKColor(0x7A, 0x86, 0x94)),
-                    SeparatorsPaint = new SolidColorPaint(new SKColor(0x1C, 0x22, 0x29)) { StrokeThickness = 1 },
+                    LabelsPaint = new SolidColorPaint(new SKColor(0xFF, 0xFF, 0xFF, 0x8F)),
+                    SeparatorsPaint = new SolidColorPaint(new SKColor(0xFF, 0xFF, 0xFF, 0x1F)) { StrokeThickness = 1 },
                     TextSize = 11,
                     Labeler = v => $"{v:0}°"
                 }
@@ -852,7 +852,7 @@ public partial class Dashboard : UserControl, INotifyPropertyChanged
     {
         Values = values,
         GeometrySize = 11,
-        Fill = new SolidColorPaint(new SKColor(0x07, 0x09, 0x0C)),
+        Fill = new SolidColorPaint(new SKColor(0x00, 0x00, 0x00)),
         Stroke = new SolidColorPaint(color) { StrokeThickness = 3 },
         IsHoverable = false
     };

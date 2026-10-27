@@ -145,7 +145,7 @@ public sealed class ProcessMonitor
         return parts is { Length: > 1 } && int.TryParse(parts[1], out var uid) && uid == _uid;
     }
 
-    /// <summary>Label browser/Electron helpers by their role, e.g. "chrome · renderer".</summary>
+    /// <summary>Label browser/Electron helpers by their role, e.g. "chrome (renderer)".</summary>
     private static string FriendlyName(int pid, string comm)
     {
         var cmdline = ReadText($"/proc/{pid}/cmdline");
@@ -154,7 +154,7 @@ public sealed class ProcessMonitor
         var exe = args.Length > 0 ? Path.GetFileName(args[0]) : comm;
         if (string.IsNullOrEmpty(exe)) exe = comm;
         var type = args.FirstOrDefault(a => a.StartsWith("--type="));
-        return type != null ? $"{exe} · {type[7..]}" : exe;
+        return type != null ? $"{exe} ({type[7..]})" : exe;
     }
 
     private static int GetUid()

@@ -9,6 +9,7 @@
   - Pop-ups when the mode changes.
 - **Super+F5** cycles modes system-wide (`PredatorCore --cycle-mode`).
 - Optional **tray icon** with mode / fan menus and the live CPU temperature.
+- **New look**: a black page, Titillium Web, hairline sections and one coolant accent, with paper-cut illustrations, a new fan mark and a new app icon.
 
 ## v0.1.0 — first release
 

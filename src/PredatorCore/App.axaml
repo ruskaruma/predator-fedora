@@ -4,76 +4,68 @@
              RequestedThemeVariant="Dark">
 
     <Application.Resources>
-        <FontFamily x:Key="OxaniumFont">avares://PredatorCore/Assets/Fonts/Oxanium.ttf#Oxanium</FontFamily>
-        <FontFamily x:Key="OxaniumBoldFont">avares://PredatorCore/Assets/Fonts/Oxanium-Bold.ttf#Oxanium</FontFamily>
-        <FontFamily x:Key="OpenSansFont">avares://PredatorCore/Assets/Fonts/OpenSans.ttf#Open Sans</FontFamily>
-        <FontFamily x:Key="OpenSansSemiBoldFont">avares://PredatorCore/Assets/Fonts/OpenSans-SemiBold.ttf#Open Sans SemiBold</FontFamily>
+        <FontFamily x:Key="BodyFont">avares://PredatorCore/Assets/Fonts/TitilliumWeb-Regular.ttf#Titillium Web</FontFamily>
+        <FontFamily x:Key="SemiFont">avares://PredatorCore/Assets/Fonts/TitilliumWeb-SemiBold.ttf#Titillium Web</FontFamily>
 
-        <!-- PredatorSense-inspired palette: near-black surfaces, electric cyan accent -->
-        <Color x:Key="PsBgColor">#07090C</Color>
-        <Color x:Key="PsAccentColor">#00E0FF</Color>
-        <SolidColorBrush x:Key="PsBg" Color="#07090C" />
-        <SolidColorBrush x:Key="PsSidebar" Color="#0A0D11" />
-        <SolidColorBrush x:Key="PsSurface" Color="#0F1318" />
-        <SolidColorBrush x:Key="PsSurfaceRaised" Color="#151A21" />
-        <SolidColorBrush x:Key="PsBorder" Color="#1F2630" />
-        <SolidColorBrush x:Key="PsAccent" Color="#00E0FF" />
-        <SolidColorBrush x:Key="PsAccentSoft" Color="#1A00E0FF" />
-        <SolidColorBrush x:Key="PsAccentOrange" Color="#FF8A00" />
-        <SolidColorBrush x:Key="PsText" Color="#E6F2F7" />
-        <SolidColorBrush x:Key="PsMuted" Color="#7A8694" />
-        <SolidColorBrush x:Key="PsWarn" Color="#FFB020" />
-        <SolidColorBrush x:Key="PsCritical" Color="#FF3B4E" />
-        <SolidColorBrush x:Key="PsGood" Color="#2BD97C" />
+        <!-- New Horizon print style: a black page, white type, hairline rules and one accent.
+             The accent is coolant, taken from the teal disc of the fan illustration. -->
+        <Color x:Key="PsAccentColor">#4FC3DC</Color>
+        <SolidColorBrush x:Key="PsBg" Color="#000000" />
+        <SolidColorBrush x:Key="PsRule" Color="#24FFFFFF" />
+        <SolidColorBrush x:Key="PsRuleStrong" Color="#47FFFFFF" />
+        <SolidColorBrush x:Key="PsAccent" Color="#4FC3DC" />
+        <SolidColorBrush x:Key="PsAccentDark" Color="#2F9FBD" />
+        <SolidColorBrush x:Key="PsOnAccent" Color="#0F0F0E" />
+        <!-- second data series (GPU), printed in cream paper -->
+        <SolidColorBrush x:Key="PsSecond" Color="#EBE5C8" />
+        <SolidColorBrush x:Key="PsText" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="PsSoft" Color="#E0FFFFFF" />
+        <SolidColorBrush x:Key="PsMuted" Color="#8FFFFFFF" />
+        <SolidColorBrush x:Key="PsGood" Color="#8FBF5A" />
+        <SolidColorBrush x:Key="PsWarn" Color="#E3A52A" />
+        <SolidColorBrush x:Key="PsCritical" Color="#FF6A4D" />
 
-        <!-- Glass surfaces: translucent fills let the window's ambient light show through; a lit top
-             edge sells the "glass" look. All static brushes, so no per-frame cost. -->
-        <LinearGradientBrush x:Key="GlassFill" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#99161D26" />
-            <GradientStop Offset="1" Color="#8C0A0E13" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="GlassFillRaised" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#1FFFFFFF" />
-            <GradientStop Offset="1" Color="#08FFFFFF" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="GlassEdge" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#4DFFFFFF" />
-            <GradientStop Offset="0.25" Color="#1AFFFFFF" />
-            <GradientStop Offset="1" Color="#0DFFFFFF" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="GlassEdgeAccent" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#FF7FF3FF" />
-            <GradientStop Offset="1" Color="#6600E0FF" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="GlassChrome" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#B30E1319" />
-            <GradientStop Offset="1" Color="#A607090C" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="GlassButton" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#8CF6FF" />
-            <GradientStop Offset="0.48" Color="#1FE3FF" />
-            <GradientStop Offset="0.52" Color="#00CFEF" />
-            <GradientStop Offset="1" Color="#00A6C7" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="GlassButtonHover" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#B3F9FF" />
-            <GradientStop Offset="0.48" Color="#55EBFF" />
-            <GradientStop Offset="0.52" Color="#1FDDF7" />
-            <GradientStop Offset="1" Color="#00B8D4" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="GlassTileChecked" StartPoint="0%,0%" EndPoint="0%,100%">
-            <GradientStop Offset="0" Color="#4000E0FF" />
-            <GradientStop Offset="1" Color="#1400E0FF" />
-        </LinearGradientBrush>
+        <!-- The drawn wordmark: monoline strokes with cut joins, in a 586 x 92 box (stroke 6.5) -->
+        <StreamGeometry x:Key="WordmarkGeometry">M3.25 33.25 V95.5M7.86 41.61 A21.75 21.75 0 1 1 7.86 68.39M58.75 33.25 V76.75M63.95 40.5 C67.75 35.5 72.75 33.25 78.75 33.25 H82.75M137.25 55 A21.75 21.75 0 1 0 130.88 70.38M99.75 55 H137.25M188.14 41.61 A21.75 21.75 0 1 0 188.14 68.39M192.75 16 V76.75M246.89 41.61 A21.75 21.75 0 1 0 246.89 68.39M251.5 33.25 V76.75M278.75 16 V66 Q278.75 76.75 289.75 76.75M266.75 33.25 H272.5 M285 33.25 H292.75M303.75 55 A21.75 21.75 0 1 0 347.25 55 A21.75 21.75 0 1 0 303.75 55M359.25 33.25 V76.75M364.45 40.5 C368.25 35.5 373.25 33.25 379.25 33.25 H383.25M433.14 41.61 A21.75 21.75 0 1 0 433.14 68.39M445.14 55 A21.75 21.75 0 1 0 488.64 55 A21.75 21.75 0 1 0 445.14 55M500.64 33.25 V76.75M505.84 40.5 C509.64 35.5 514.64 33.25 520.64 33.25 H524.64M579.14 55 A21.75 21.75 0 1 0 572.77 70.38M541.64 55 H579.14</StreamGeometry>
 
-        <!-- Fluent control accents (sliders, toggles, checkboxes, combo focus) -->
-        <Color x:Key="SystemAccentColor">#00E0FF</Color>
-        <Color x:Key="SystemAccentColorLight1">#33E7FF</Color>
-        <Color x:Key="SystemAccentColorLight2">#66EDFF</Color>
-        <Color x:Key="SystemAccentColorLight3">#99F3FF</Color>
-        <Color x:Key="SystemAccentColorDark1">#00B8D4</Color>
-        <Color x:Key="SystemAccentColorDark2">#0090A8</Color>
-        <Color x:Key="SystemAccentColorDark3">#006A7C</Color>
+        <!-- Square corners everywhere -->
+        <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+        <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+        <CornerRadius x:Key="SliderThumbCornerRadius">0</CornerRadius>
+
+        <!-- Fluent control colours -->
+        <SolidColorBrush x:Key="SliderTrackFill" Color="#33FFFFFF" />
+        <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="#47FFFFFF" />
+        <SolidColorBrush x:Key="SliderTrackFillPressed" Color="#47FFFFFF" />
+        <SolidColorBrush x:Key="SliderTrackValueFill" Color="#4FC3DC" />
+        <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="#4FC3DC" />
+        <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="#2F9FBD" />
+        <SolidColorBrush x:Key="SliderThumbBackground" Color="#4FC3DC" />
+        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="#2F9FBD" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#0F0F0E" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#0F0F0E" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#0F0F0E" />
+        <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#0F0F0E" />
+        <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#0F0F0E" />
+        <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#0F0F0E" />
+        <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#000000" />
+        <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#47FFFFFF" />
+        <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBorderBrush" Color="#47FFFFFF" />
+        <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#8FFFFFFF" />
+        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#4FC3DC" />
+        <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFFFFF" />
+
+        <Color x:Key="SystemAccentColor">#4FC3DC</Color>
+        <Color x:Key="SystemAccentColorLight1">#6FCFE3</Color>
+        <Color x:Key="SystemAccentColorLight2">#8FDBEA</Color>
+        <Color x:Key="SystemAccentColorLight3">#AFE7F1</Color>
+        <Color x:Key="SystemAccentColorDark1">#2F9FBD</Color>
+        <Color x:Key="SystemAccentColorDark2">#227C94</Color>
+        <Color x:Key="SystemAccentColorDark3">#16596B</Color>
     </Application.Resources>
 
     <Application.Styles>
@@ -83,102 +75,86 @@
     </Application.Styles>
 
     <Application.Styles>
-        <!-- ============ Typography ============ -->
+        <!-- ============ Type ============ -->
         <Style Selector="Window">
             <Setter Property="Background" Value="{StaticResource PsBg}" />
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
-            <Setter Property="FontFamily" Value="{StaticResource OpenSansFont}" />
+            <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
         </Style>
 
         <Style Selector="TextBlock">
-            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontSize" Value="14" />
         </Style>
 
+        <!-- Page title -->
         <Style Selector="TextBlock.SectionHeader">
-            <Setter Property="FontSize" Value="22" />
-            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
-            <Setter Property="LetterSpacing" Value="3" />
+            <Setter Property="FontSize" Value="34" />
+            <Setter Property="LetterSpacing" Value="-0.6" />
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
-            <Setter Property="Margin" Value="0 4 0 2" />
+            <Setter Property="Margin" Value="0 0 0 2" />
         </Style>
 
         <Style Selector="TextBlock.SectionSub">
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="{StaticResource PsMuted}" />
-            <Setter Property="Margin" Value="0 0 0 16" />
+            <Setter Property="Margin" Value="0 0 0 34" />
         </Style>
 
-        <!-- Card title: uppercase Oxanium with letter spacing, like PredatorSense panels -->
+        <!-- Section title, under the section's hairline -->
         <Style Selector="TextBlock.SubHeader">
-            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="LetterSpacing" Value="2" />
-            <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
+            <Setter Property="FontFamily" Value="{StaticResource SemiFont}" />
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="Foreground" Value="{StaticResource PsText}" />
             <Setter Property="Margin" Value="0 0 0 4" />
         </Style>
 
         <Style Selector="TextBlock.Hint">
             <Setter Property="Foreground" Value="{StaticResource PsMuted}" />
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="LineHeight" Value="20" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
         <Style Selector="TextBlock.Label">
             <Setter Property="Foreground" Value="{StaticResource PsMuted}" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="LetterSpacing" Value="1" />
+            <Setter Property="FontSize" Value="13" />
         </Style>
 
         <Style Selector="TextBlock.Value">
-            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
+            <Setter Property="FontFamily" Value="{StaticResource SemiFont}" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
         </Style>
 
         <Style Selector="TextBlock.BigValue">
-            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
-            <Setter Property="FontSize" Value="26" />
+            <Setter Property="FontSize" Value="32" />
+            <Setter Property="LetterSpacing" Value="-0.5" />
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
         </Style>
 
         <Style Selector="TextBlock.Warning">
             <Setter Property="Foreground" Value="{StaticResource PsWarn}" />
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontSize" Value="13.5" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
-        <!-- ============ Surfaces ============ -->
+        <!-- ============ Sections: a hairline on top, no box ============ -->
         <Style Selector="Border.Card">
-            <Setter Property="Background" Value="{StaticResource GlassFill}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="18 16" />
-            <Setter Property="Margin" Value="0 0 0 14" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource PsRule}" />
+            <Setter Property="BorderThickness" Value="0 1 0 0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0 16 0 0" />
+            <Setter Property="Margin" Value="0 0 0 38" />
         </Style>
 
-        <!-- Thin cyan rule at the top of a card title -->
-        <Style Selector="Border.CardAccent">
-            <Setter Property="Background" Value="{StaticResource PsAccent}" />
-            <Setter Property="Width" Value="28" />
-            <Setter Property="Height" Value="2" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Margin" Value="0 0 0 8" />
-        </Style>
-
+        <!-- A hairline-boxed panel inside a section -->
         <Style Selector="Border.Tile">
-            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource PsRule}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="12 10" />
-        </Style>
-
-        <Style Selector="Border.Chip">
-            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Padding" Value="12 5" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="16 12" />
         </Style>
 
         <!-- ============ Sidebar navigation (TabControl on the left) ============ -->
@@ -187,10 +163,16 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <DockPanel>
-                        <Border DockPanel.Dock="Left" Width="210" Background="{StaticResource GlassChrome}"
-                                BorderBrush="#1AFFFFFF" BorderThickness="0 0 1 0">
-                            <ItemsPresenter Name="PART_ItemsPresenter" Margin="0 12 0 0"
-                                            ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        <Border DockPanel.Dock="Left" Width="220" Background="{StaticResource PsBg}"
+                                BorderBrush="{StaticResource PsRule}" BorderThickness="0 0 1 0">
+                            <Grid RowDefinitions="*,Auto">
+                                <ItemsPresenter Name="PART_ItemsPresenter" Margin="0 18 0 0"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                                <!-- the fan, cut from paper: the brand's illustration -->
+                                <Image Grid.Row="1" Source="avares://PredatorCore/Assets/Art/spot-fan.png"
+                                       Width="184" Height="184" Margin="18 0 18 22" Opacity="0.95"
+                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                            </Grid>
                         </Border>
                         <ContentPresenter Name="PART_SelectedContentHost"
                                           Margin="{TemplateBinding Padding}"
@@ -207,138 +189,162 @@
         </Style>
 
         <Style Selector="TabControl.Nav > TabItem">
-            <Setter Property="FontFamily" Value="{StaticResource OxaniumFont}" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+            <Setter Property="FontSize" Value="16" />
             <Setter Property="Foreground" Value="{StaticResource PsMuted}" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Height" Value="48" />
+            <Setter Property="Height" Value="42" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Name="navBorder" Background="{TemplateBinding Background}">
-                        <Grid ColumnDefinitions="3,*">
-                            <Border Name="navIndicator" Grid.Column="0" Background="Transparent" />
+                    <Border Background="Transparent">
+                        <Grid ColumnDefinitions="2,*">
+                            <Border Name="navIndicator" Grid.Column="0" Background="Transparent" Margin="0 9" />
                             <ContentPresenter Grid.Column="1" Name="PART_ContentPresenter"
                                               Content="{TemplateBinding Header}"
                                               ContentTemplate="{TemplateBinding HeaderTemplate}"
                                               Foreground="{TemplateBinding Foreground}"
                                               VerticalAlignment="Center"
-                                              Margin="18 0 12 0" />
+                                              Margin="22 0 12 0" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter>
         </Style>
         <Style Selector="TabControl.Nav > TabItem:pointerover">
-            <Setter Property="Background" Value="#10161C" />
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
         </Style>
         <Style Selector="TabControl.Nav > TabItem:selected">
-            <Setter Property="Background">
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                    <GradientStop Offset="0" Color="#3300E0FF" />
-                    <GradientStop Offset="1" Color="#0000E0FF" />
-                </LinearGradientBrush>
-            </Setter>
-            <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
+            <Setter Property="Foreground" Value="{StaticResource PsText}" />
         </Style>
         <Style Selector="TabControl.Nav > TabItem:selected /template/ Border#navIndicator">
             <Setter Property="Background" Value="{StaticResource PsAccent}" />
         </Style>
 
-        <!-- ============ Buttons ============ -->
+        <!-- ============ Buttons: two plates of one ink, printed out of register ============ -->
         <Style Selector="Button">
-            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="LetterSpacing" Value="1" />
-            <Setter Property="Background" Value="{StaticResource GlassButton}" />
-            <Setter Property="Foreground" Value="#031318" />
-            <Setter Property="BorderBrush" Value="#99FFFFFF" />
-            <Setter Property="BorderThickness" Value="0 1 0 0" />
-            <Setter Property="Padding" Value="18 8" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="FontFamily" Value="{StaticResource SemiFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Background" Value="{StaticResource PsAccent}" />
+            <Setter Property="Foreground" Value="{StaticResource PsOnAccent}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="18 7" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel>
+                        <Border Name="plateA" Background="{TemplateBinding Background}" Margin="0 0 5 3" />
+                        <Border Name="plateB" Background="{TemplateBinding Background}" Margin="5 3 0 0" />
+                        <Border Name="frame" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" />
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Background="Transparent"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Padding="{TemplateBinding Padding}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Foreground="{TemplateBinding Foreground}" />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="{StaticResource PsAccentDark}" />
+        </Style>
+        <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource GlassButtonHover}" />
-            <Setter Property="BorderBrush" Value="#CCFFFFFF" />
-            <Setter Property="Foreground" Value="#031318" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource PsOnAccent}" />
         </Style>
         <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#00B8D4" />
-            <Setter Property="Foreground" Value="#031318" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource PsOnAccent}" />
+        </Style>
+        <Style Selector="Button:disabled">
+            <Setter Property="Background" Value="#24FFFFFF" />
         </Style>
         <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource PsSurfaceRaised}" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource PsMuted}" />
         </Style>
 
+        <!-- Secondary: a hairline frame, no ink -->
         <Style Selector="Button.Secondary">
-            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
+            <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PsRuleStrong}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
-        <Style Selector="Button.Secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource GlassTileChecked}" />
-            <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
+        <Style Selector="Button.Secondary:pointerover">
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="{StaticResource PsAccent}" />
         </Style>
+        <Style Selector="Button.Secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
+        </Style>
+        <Style Selector="Button.Secondary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
+        </Style>
+        <Style Selector="Button.Secondary:disabled">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource PsRule}" />
+        </Style>
 
-        <!-- ============ Mode tiles (profile / fan / direction selectors) ============ -->
+        <!-- ============ Mode selectors: a hairline frame; the chosen one is printed in coolant ============ -->
         <Style Selector="RadioButton">
-            <Setter Property="FontFamily" Value="{StaticResource OxaniumBoldFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="LetterSpacing" Value="1" />
-            <Setter Property="Width" Value="128" />
-            <Setter Property="Height" Value="104" />
-            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
-            <Setter Property="Foreground" Value="{StaticResource PsMuted}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
+            <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="MinWidth" Value="124" />
+            <Setter Property="Height" Value="46" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource PsText}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PsRuleStrong}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="8" />
+            <Setter Property="Padding" Value="18 0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <ControlTemplate>
                     <Panel>
-                        <Border Name="glow" CornerRadius="12" Margin="-3" Background="Transparent" />
-                        <Border Name="border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{TemplateBinding CornerRadius}">
-                            <ContentPresenter Name="PART_ContentPresenter"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              Padding="{TemplateBinding Padding}"
-                                              Foreground="{TemplateBinding Foreground}" />
-                        </Border>
+                        <Border Name="plateA" Background="{TemplateBinding Background}" Margin="0 0 5 3" />
+                        <Border Name="plateB" Background="{TemplateBinding Background}" Margin="5 3 0 0" />
+                        <Border Name="frame" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" />
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Padding="{TemplateBinding Padding}"
+                                          Foreground="{TemplateBinding Foreground}" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
         </Style>
-        <Style Selector="RadioButton StackPanel > TextBlock">
-            <Setter Property="Margin" Value="0 8 0 0" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-        </Style>
         <Style Selector="RadioButton:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource PsText}" />
+        </Style>
+        <Style Selector="RadioButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
-            <Setter Property="BorderBrush" Value="#2F3A47" />
         </Style>
         <Style Selector="RadioButton:checked">
-            <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassEdgeAccent}" />
-            <Setter Property="Background" Value="{StaticResource GlassTileChecked}" />
+            <Setter Property="Background" Value="{StaticResource PsAccent}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
-        <Style Selector="RadioButton:checked /template/ Border#glow">
-            <Setter Property="Background" Value="#1F00E0FF" />
+        <Style Selector="RadioButton:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{StaticResource PsOnAccent}" />
+            <Setter Property="FontFamily" Value="{StaticResource SemiFont}" />
         </Style>
         <Style Selector="RadioButton:disabled">
             <Setter Property="Opacity" Value="0.4" />
@@ -355,23 +361,28 @@
 
         <Style Selector="ProgressBar">
             <Setter Property="Foreground" Value="{StaticResource PsAccent}" />
-            <Setter Property="Background" Value="#1C2229" />
-            <Setter Property="MinHeight" Value="4" />
-            <Setter Property="Height" Value="4" />
-            <Setter Property="CornerRadius" Value="2" />
+            <Setter Property="Background" Value="#24FFFFFF" />
+            <Setter Property="MinHeight" Value="3" />
+            <Setter Property="Height" Value="3" />
+            <Setter Property="CornerRadius" Value="0" />
         </Style>
-        <Style Selector="ProgressBar.Orange">
-            <Setter Property="Foreground" Value="{StaticResource PsAccentOrange}" />
+        <Style Selector="ProgressBar.Second">
+            <Setter Property="Foreground" Value="{StaticResource PsSecond}" />
         </Style>
 
         <Style Selector="CheckBox">
             <Setter Property="Foreground" Value="{StaticResource PsText}" />
+            <Setter Property="FontSize" Value="14" />
         </Style>
 
         <Style Selector="ComboBox">
-            <Setter Property="Background" Value="{StaticResource GlassFillRaised}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassEdge}" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource PsRuleStrong}" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="FontSize" Value="14" />
         </Style>
 
         <Style Selector="ScrollViewer">

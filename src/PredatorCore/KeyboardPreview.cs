@@ -55,15 +55,14 @@ public class KeyboardPreview : Control
         var bounds = new Rect(Bounds.Size);
         if (bounds.Width < 50 || bounds.Height < 30) return;
 
-        context.DrawRectangle(new SolidColorBrush(Color.Parse("#0A0D11"), 0.55),
-            new Pen(new SolidColorBrush(Colors.White, 0.1), 1), bounds, 12, 12);
+        context.DrawRectangle(null, new Pen(new SolidColorBrush(Colors.White, 0.14), 1), bounds.Deflate(0.5));
 
         const double pad = 14, gap = 5;
         var inner = bounds.Deflate(pad);
         var keyHeight = (inner.Height - gap * (Rows.Length - 1)) / Rows.Length;
         var glow = Math.Clamp(Brightness / 100.0, 0, 1);
         var zones = new[] { Zone1, Zone2, Zone3, Zone4 };
-        var keyFill = new SolidColorBrush(Color.Parse("#12161C"));
+        var keyFill = new SolidColorBrush(Color.Parse("#0D0D0D"));
 
         for (var r = 0; r < Rows.Length; r++)
         {
@@ -82,19 +81,18 @@ public class KeyboardPreview : Control
                 var zone = zones[Math.Clamp((int)(centre * 4), 0, 3)];
 
                 if (glow > 0)
-                    context.DrawRectangle(new SolidColorBrush(zone, 0.28 * glow), null, key.Inflate(2), 5, 5);
-                context.DrawRectangle(keyFill, new Pen(new SolidColorBrush(zone, 0.25 + 0.75 * glow), 1.2), key, 4,
-                    4);
+                    context.DrawRectangle(new SolidColorBrush(zone, 0.28 * glow), null, key.Inflate(2));
+                context.DrawRectangle(keyFill, new Pen(new SolidColorBrush(zone, 0.25 + 0.75 * glow), 1.2), key);
                 if (glow > 0)
                     context.DrawRectangle(new SolidColorBrush(zone, 0.55 * glow), null,
-                        new Rect(key.X + width * 0.3, key.Y + keyHeight * 0.42, width * 0.4, 2), 1, 1);
+                        new Rect(key.X + width * 0.3, key.Y + keyHeight * 0.42, width * 0.4, 2));
 
                 x += width + gap;
             }
         }
 
         // Zone dividers
-        var divider = new Pen(new SolidColorBrush(Color.Parse("#2A3440")), 1, new DashStyle(new double[] { 3, 3 }, 0));
+        var divider = new Pen(new SolidColorBrush(Colors.White, 0.18), 1, new DashStyle(new double[] { 3, 3 }, 0));
         for (var i = 1; i < 4; i++)
         {
             var dx = inner.X + inner.Width * i / 4;

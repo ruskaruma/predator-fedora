@@ -39,10 +39,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\Fonts\OpenSans-SemiBold.ttf"/>
-        <AvaloniaResource Include="Assets\Fonts\OpenSans.ttf"/>
-        <AvaloniaResource Include="Assets\Fonts\Oxanium-Bold.ttf"/>
-        <AvaloniaResource Include="Assets\Fonts\Oxanium.ttf"/>
+        <AvaloniaResource Include="Assets\Fonts\TitilliumWeb-Regular.ttf"/>
+        <AvaloniaResource Include="Assets\Fonts\TitilliumWeb-SemiBold.ttf"/>
+        <AvaloniaResource Include="Assets\Art\*.png"/>
         <None Remove="iconTransparent.png"/>
         <AvaloniaResource Include="iconTransparent.png"/>
         <None Remove="icon.png"/>
